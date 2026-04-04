@@ -1,10 +1,111 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My Portfolio</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brad Rehahn - Instructional Designer</title>
+    <style>
+        /* Reset and basic styles */
+        body { margin:0; font-family: Arial, sans-serif; line-height:1.6; color:#333; }
+        a { text-decoration: none; color: #2a9df4; }
+        h1,h2,h3 { margin:0 0 10px 0; }
+        section { padding: 60px 20px; max-width: 900px; margin: auto; }
+        .container { max-width: 900px; margin: auto; padding: 0 20px; }
+
+        /* Header / Hero */
+        header { background:#2a9df4; color:#fff; text-align:center; padding:100px 20px; }
+        header h1 { font-size: 2.5rem; margin-bottom:10px; }
+        header p { font-size:1.2rem; margin-bottom:20px; }
+        header a { background:#fff; color:#2a9df4; padding:10px 20px; border-radius:5px; font-weight:bold; }
+
+        /* Sections */
+        section { margin-bottom:50px; }
+        .project { border:1px solid #ddd; padding:20px; border-radius:5px; margin-bottom:20px; }
+        .project img { max-width:100%; height:auto; border-radius:5px; }
+
+        /* Skills */
+        .skills { display:flex; flex-wrap:wrap; gap:10px; }
+        .skills span { background:#2a9df4; color:#fff; padding:5px 10px; border-radius:3px; }
+
+        /* Footer */
+        footer { text-align:center; padding:20px; font-size:0.9rem; color:#666; }
+
+        /* Responsive */
+        @media(max-width:600px){
+            header h1 { font-size:2rem; }
+            header p { font-size:1rem; }
+        }
+    </style>
 </head>
 <body>
-    <h1>Hello, I'm [Your Name]</h1>
-    <p>This is my portfolio website.</p>
+
+    <!-- Hero Section -->
+    <header>
+        <h1>Brad Rehahn</h1>
+        <p>Instructional Designer creating scalable eLearning that improves performance and reduces errors.</p>
+        <a href="#work">View My Work</a>
+    </header>
+
+    <!-- About Section -->
+    <section id="about">
+        <h2>About Me</h2>
+        <p>I have 10+ years of experience designing multimedia training solutions that enhance workforce performance. Skilled in Articulate Storyline, Rise 360, and Adobe Creative Suite, with strong expertise in LMS platforms and instructional design best practices.</p>
+    </section>
+
+    <!-- Work Section -->
+    <section id="work">
+        <h2>Featured Work</h2>
+
+        <!-- Project 1 -->
+        <div class="project">
+            <h3>eLearning Module Demo</h3>
+            <p><strong>Problem:</strong> Employees needed a more engaging way to learn compliance procedures.</p>
+            <p><strong>Solution:</strong> Developed an interactive Storyline module with branching scenarios and quizzes.</p>
+            <p><strong>Tools:</strong> Articulate Storyline, Adobe Illustrator</p>
+        </div>
+
+        <!-- Project 2 -->
+        <div class="project">
+            <h3>Onboarding Guide</h3>
+            <p><strong>Problem:</strong> New hires struggled to understand company workflows quickly.</p>
+            <p><strong>Solution:</strong> Created a visual, interactive Rise 360 course with embedded videos and checklists.</p>
+            <p><strong>Tools:</strong> Rise 360, Canva</p>
+        </div>
+
+        <!-- Project 3 -->
+        <div class="project">
+            <h3>College Training Project</h3>
+            <p><strong>Problem:</strong> Needed to demonstrate instructional design skills for portfolio purposes.</p>
+            <p><strong>Solution:</strong> Designed a full course on workplace communication with assessments and scenario simulations.</p>
+            <p><strong>Tools:</strong> Storyline, PowerPoint</p>
+        </div>
+
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills">
+        <h2>Skills</h2>
+        <div class="skills">
+            <span>Articulate Storyline</span>
+            <span>Rise 360</span>
+            <span>Adobe Creative Suite</span>
+            <span>LMS Platforms</span>
+            <span>Instructional Design</span>
+            <span>eLearning Development</span>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <h2>Contact Me</h2>
+        <p>Email: <a href="mailto:bwrehahn@gmail.com">bwrehahn@gmail.com</a></p>
+        <p>LinkedIn: <a href="https://www.linkedin.com/in/sam-gold/" target="_blank">linkedin.com/in/sam-gold</a></p>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        &copy; 2026 Sam Gold. All rights reserved.
+    </footer>
+
 </body>
 </html>
