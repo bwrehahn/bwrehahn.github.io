@@ -5,78 +5,115 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Brad Rehahn - Instructional Designer</title>
 <style>
-    /* Reset & basics */
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: 'Arial', sans-serif; line-height:1.6; color:#333; scroll-behavior: smooth; }
-    a { text-decoration:none; color: inherit; }
+/* Reset & basics */
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'Arial', sans-serif; line-height:1.6; color:#333; scroll-behavior: smooth; 
+       background: linear-gradient(160deg, #f4f4f4, #e0f0ff); }
 
-    /* Colors */
-    :root {
-        --primary:#2a9df4;
-        --secondary:#f4f4f4;
-        --dark:#333;
-        --accent:#ff6b6b;
-    }
+/* Colors */
+:root {
+    --primary:#2a9df4;
+    --secondary:#ffffffcc;
+    --dark:#333;
+    --accent:#ff6b6b;
+}
 
-    /* Navbar */
-    nav {
-        position:fixed; top:0; width:100%; background:#fff; box-shadow:0 2px 5px rgba(0,0,0,0.1);
-        display:flex; justify-content:center; z-index:1000;
-    }
-    nav ul { display:flex; list-style:none; }
-    nav ul li { margin:0 15px; }
-    nav ul li a { display:block; padding:15px 0; color:var(--dark); font-weight:bold; transition:0.3s; }
-    nav ul li a:hover { color:var(--primary); }
+/* Navbar */
+nav {
+    position:fixed; top:0; width:100%; background:#fffccf; box-shadow:0 4px 10px rgba(0,0,0,0.15);
+    display:flex; justify-content:center; z-index:1000; transition:0.3s;
+}
+nav:hover { background:#fff; }
+nav ul { display:flex; list-style:none; }
+nav ul li { margin:0 15px; }
+nav ul li a { display:block; padding:15px 0; color:var(--dark); font-weight:bold; transition:0.3s; }
+nav ul li a:hover { color:var(--primary); }
 
-    /* Header / Hero */
-    header {
-        background: var(--primary); color:#fff; text-align:center; padding:120px 20px;
-    }
-    header h1 { font-size:3rem; margin-bottom:10px; }
-    header p { font-size:1.3rem; margin-bottom:20px; max-width:700px; margin:auto; }
-    header a {
-        background:#fff; color:var(--primary); padding:12px 25px; border-radius:5px; font-weight:bold;
-        transition:0.3s; display:inline-block;
-    }
-    header a:hover { background:#e6e6e6; }
+/* Hero Section */
+@keyframes gradientShift {
+    0% { background-position:0% 50%; }
+    50% { background-position:100% 50%; }
+    100% { background-position:0% 50%; }
+}
+header {
+    text-align:center; padding:120px 20px; color:#fff; 
+    background: linear-gradient(-45deg, #2a9df4, #6cc1ff, #00c6ff, #0059ff);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    border-radius:12px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.2);
+    transition: transform 0.5s, box-shadow 0.5s;
+}
+header:hover { transform: translateY(-5px); box-shadow:0 12px 30px rgba(0,0,0,0.3); }
+header h1 { font-size:3rem; margin-bottom:10px; text-shadow:0 2px 5px rgba(0,0,0,0.3);}
+header p { font-size:1.3rem; margin-bottom:20px; max-width:700px; margin:auto; text-shadow:0 1px 3px rgba(0,0,0,0.2);}
+header a {
+    background:#fff; color:var(--primary); padding:12px 25px; border-radius:50px; font-weight:bold;
+    transition:0.3s, transform 0.3s;
+}
+header a:hover { background:var(--accent); color:#fff; transform: scale(1.05); }
 
-    /* Sections */
-    section { padding:80px 20px; max-width:1000px; margin:auto; opacity:0; transform:translateY(30px); transition:1s ease; }
-    section.visible { opacity:1; transform:translateY(0); }
-    section:nth-child(even) { background: var(--secondary); border-radius:8px; margin-bottom:50px; padding:80px 20px; }
-    section h2 { font-size:2rem; margin-bottom:20px; color:var(--primary); text-align:center; }
+/* Sections */
+section { padding:80px 20px; max-width:1000px; margin:auto; opacity:0; transform:translateY(30px); transition:1s ease; }
+section.visible { opacity:1; transform:translateY(0); }
+section:nth-child(even) { background: var(--secondary); border-radius:12px; margin-bottom:50px; padding:80px 20px; box-shadow:0 6px 20px rgba(0,0,0,0.1); transition: transform 0.3s; }
+section:nth-child(even):hover { transform: translateY(-5px); }
+section h2 { font-size:2rem; margin-bottom:20px; color:var(--primary); text-align:center; text-shadow:0 1px 3px rgba(0,0,0,0.1); transition: text-shadow 0.3s; }
+section h2:hover { text-shadow:0 0 15px var(--primary); }
 
-    /* Projects */
-    .project { background:#fff; border-radius:8px; padding:25px; margin-bottom:25px; box-shadow:0 3px 8px rgba(0,0,0,0.1); transition:0.3s, transform 0.5s; }
-    .project:hover { transform:translateY(-5px); box-shadow:0 6px 12px rgba(0,0,0,0.15); }
-    .project img { max-width:100%; height:auto; border-radius:5px; margin-bottom:15px; border:2px solid var(--primary); }
+/* Project Flip Cards with Shadow Pulse */
+@keyframes shadowPulse {
+    0%, 100% { box-shadow:0 4px 15px rgba(0,0,0,0.15); }
+    50% { box-shadow:0 10px 30px rgba(0,0,0,0.25); }
+}
+.projects-container { display:grid; gap:25px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); justify-items:center; }
+.project-card { perspective:1200px; }
+.project-inner {
+    position:relative; width:100%; max-width:350px; height:400px; transition: transform 0.8s; transform-style: preserve-3d;
+    animation: shadowPulse 6s ease-in-out infinite;
+}
+.project-card:hover .project-inner { transform: rotateY(180deg); }
+.project-front, .project-back {
+    position:absolute; width:100%; height:100%; backface-visibility: hidden; border-radius:12px; transition: transform 0.5s;
+}
+.project-front { background:#fff; display:flex; flex-direction:column; overflow:hidden; }
+.project-front img { width:100%; height:200px; object-fit:cover; border-bottom:2px solid var(--primary);}
+.project-front h3 { margin:15px; color:var(--primary); }
+.project-front p { margin:0 15px 10px 15px; }
 
-    /* Skills */
-    .skills { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; }
-    .skills span { background:var(--primary); color:#fff; padding:7px 15px; border-radius:20px; font-weight:bold; transition:0.3s; }
-    .skills span:hover { background:var(--accent); }
+.project-back {
+    background: var(--primary); color:#fff; transform: rotateY(180deg);
+    display:flex; flex-direction:column; justify-content:center; align-items:center; padding:20px; text-align:center;
+}
+.project-back h3 { margin-bottom:10px; }
+.project-back p { font-size:0.95rem; line-height:1.4; }
 
-    /* Contact */
-    #contact a { color:var(--primary); font-weight:bold; transition:0.3s; }
-    #contact a:hover { color:var(--accent); text-decoration:underline; }
+/* Skills */
+.skills { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; }
+.skills span { background:var(--primary); color:#fff; padding:7px 15px; border-radius:50px; font-weight:bold; transition:0.3s, transform 0.3s; }
+.skills span:hover { background:var(--accent); transform: scale(1.05); }
 
-    /* Footer */
-    footer { text-align:center; padding:20px; font-size:0.9rem; color:#666; }
+/* Contact */
+#contact a { color:var(--primary); font-weight:bold; transition:0.3s; }
+#contact a:hover { color:var(--accent); text-decoration:underline; }
 
-    /* Back to Top Button */
-    #backToTop {
-        position:fixed; bottom:40px; right:40px; padding:12px 18px; background:var(--primary);
-        color:#fff; border:none; border-radius:50px; cursor:pointer; font-size:1rem; display:none;
-        box-shadow:0 4px 8px rgba(0,0,0,0.2); transition:0.3s;
-    }
-    #backToTop:hover { background:var(--accent); }
+/* Footer */
+footer { text-align:center; padding:20px; font-size:0.9rem; color:#666; }
 
-    /* Responsive */
-    @media(max-width:768px){
-        header h1 { font-size:2.2rem; }
-        header p { font-size:1.1rem; }
-        nav ul li { margin:0 8px; }
-    }
+/* Back to Top Button */
+#backToTop {
+    position:fixed; bottom:40px; right:40px; padding:12px 18px; background:var(--primary);
+    color:#fff; border:none; border-radius:50px; cursor:pointer; font-size:1rem; display:none;
+    box-shadow:0 6px 12px rgba(0,0,0,0.25); transition:0.3s, transform 0.3s;
+}
+#backToTop:hover { background:var(--accent); transform: scale(1.1); }
+
+/* Responsive */
+@media(max-width:768px){
+    header h1 { font-size:2.2rem; }
+    header p { font-size:1.1rem; }
+    nav ul li { margin:0 8px; }
+}
 </style>
 </head>
 <body>
@@ -107,29 +144,53 @@
 <!-- Work Section -->
 <section id="work">
     <h2>Featured Work</h2>
+    <div class="projects-container">
 
-    <div class="project">
-        <img src="https://via.placeholder.com/800x400?text=Project+1+Image" alt="eLearning Module Demo">
-        <h3>eLearning Module Demo</h3>
-        <p><strong>Problem:</strong> Employees needed a more engaging way to learn compliance procedures.</p>
-        <p><strong>Solution:</strong> Developed an interactive Storyline module with branching scenarios and quizzes.</p>
-        <p><strong>Tools:</strong> Articulate Storyline, Adobe Illustrator</p>
-    </div>
+        <div class="project-card">
+            <div class="project-inner">
+                <div class="project-front">
+                    <img src="https://via.placeholder.com/350x200?text=Project+1" alt="Project 1">
+                    <h3>eLearning Module Demo</h3>
+                    <p>Interactive Storyline module for compliance training.</p>
+                </div>
+                <div class="project-back">
+                    <h3>Tools Used</h3>
+                    <p>Articulate Storyline, Adobe Illustrator</p>
+                    <p>Created branching scenarios and quizzes to improve engagement.</p>
+                </div>
+            </div>
+        </div>
 
-    <div class="project">
-        <img src="https://via.placeholder.com/800x400?text=Project+2+Image" alt="Onboarding Guide">
-        <h3>Onboarding Guide</h3>
-        <p><strong>Problem:</strong> New hires struggled to understand company workflows quickly.</p>
-        <p><strong>Solution:</strong> Created a visual, interactive Rise 360 course with embedded videos and checklists.</p>
-        <p><strong>Tools:</strong> Rise 360, Canva</p>
-    </div>
+        <div class="project-card">
+            <div class="project-inner">
+                <div class="project-front">
+                    <img src="https://via.placeholder.com/350x200?text=Project+2" alt="Project 2">
+                    <h3>Onboarding Guide</h3>
+                    <p>Interactive Rise 360 course for new hires.</p>
+                </div>
+                <div class="project-back">
+                    <h3>Tools Used</h3>
+                    <p>Rise 360, Canva</p>
+                    <p>Embedded videos and checklists to streamline onboarding.</p>
+                </div>
+            </div>
+        </div>
 
-    <div class="project">
-        <img src="https://via.placeholder.com/800x400?text=Project+3+Image" alt="College Training Project">
-        <h3>College Training Project</h3>
-        <p><strong>Problem:</strong> Needed to demonstrate instructional design skills for portfolio purposes.</p>
-        <p><strong>Solution:</strong> Designed a full course on workplace communication with assessments and scenario simulations.</p>
-        <p><strong>Tools:</strong> Storyline, PowerPoint</p>
+        <div class="project-card">
+            <div class="project-inner">
+                <div class="project-front">
+                    <img src="https://via.placeholder.com/350x200?text=Project+3" alt="Project 3">
+                    <h3>College Training Project</h3>
+                    <p>Full course design for workplace communication.</p>
+                </div>
+                <div class="project-back">
+                    <h3>Tools Used</h3>
+                    <p>Storyline, PowerPoint</p>
+                    <p>Scenario simulations and assessments to demonstrate skills.</p>
+                </div>
+            </div>
+        </div>
+
     </div>
 </section>
 
@@ -150,7 +211,7 @@
 <section id="contact">
     <h2>Contact Me</h2>
     <p>Email: <a href="mailto:bwrehahn@gmail.com">bwrehahn@gmail.com</a></p>
-    <p>LinkedIn: <a href="https://www.linkedin.com/in/brad-rehahn-468b5913/" target="_blank">linkedin.com/in/brad-rehahn</a></p>
+    <p>LinkedIn: <a href="https://www.linkedin.com/in/brad-rehahn-468b5913/" target="_blank">linkedin.com/in/Brad-Rehahn</a></p>
 </section>
 
 <!-- Footer -->
@@ -162,28 +223,21 @@
 <button id="backToTop" onclick="scrollToTop()">↑ Top</button>
 
 <script>
-    // Scroll-triggered fade-in
-    const sections = document.querySelectorAll('section');
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if(entry.isIntersecting) {
-                entry.target.classList.add('visible');
-            }
-        });
-    }, { threshold: 0.2 });
-
-    sections.forEach(section => observer.observe(section));
-
-    // Back to Top Button
-    const backBtn = document.getElementById('backToTop');
-    window.addEventListener('scroll', () => {
-        if(window.scrollY > 300) backBtn.style.display = 'block';
-        else backBtn.style.display = 'none';
+// Scroll-triggered fade-in
+const sections = document.querySelectorAll('section');
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if(entry.isIntersecting) entry.target.classList.add('visible');
     });
+}, { threshold: 0.2 });
+sections.forEach(section => observer.observe(section));
 
-    function scrollToTop() {
-        window.scrollTo({ top:0, behavior:'smooth' });
-    }
+// Back to Top Button
+const backBtn = document.getElementById('backToTop');
+window.addEventListener('scroll', () => {
+    backBtn.style.display = (window.scrollY > 300) ? 'block' : 'none';
+});
+function scrollToTop() { window.scrollTo({ top:0, behavior:'smooth' }); }
 </script>
 
 </body>
