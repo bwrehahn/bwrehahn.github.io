@@ -3,45 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brad Rehahn - Instructional Designer</title>
+    <title>Sam Gold - Instructional Designer</title>
     <style>
-        /* Reset and basic styles */
-        body { margin:0; font-family: Arial, sans-serif; line-height:1.6; color:#333; }
-        a { text-decoration: none; color: #2a9df4; }
-        h1,h2,h3 { margin:0 0 10px 0; }
-        section { padding: 60px 20px; max-width: 900px; margin: auto; }
-        .container { max-width: 900px; margin: auto; padding: 0 20px; }
+        /* Basic Reset */
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'Arial', sans-serif; line-height:1.6; color:#333; scroll-behavior: smooth; }
+        a { text-decoration:none; color: inherit; }
+
+        /* Colors */
+        :root {
+            --primary:#2a9df4;
+            --secondary:#f4f4f4;
+            --dark:#333;
+        }
 
         /* Header / Hero */
-        header { background:#2a9df4; color:#fff; text-align:center; padding:100px 20px; }
-        header h1 { font-size: 2.5rem; margin-bottom:10px; }
-        header p { font-size:1.2rem; margin-bottom:20px; }
-        header a { background:#fff; color:#2a9df4; padding:10px 20px; border-radius:5px; font-weight:bold; }
+        header {
+            background: var(--primary);
+            color:#fff;
+            text-align:center;
+            padding:120px 20px;
+        }
+        header h1 { font-size:3rem; margin-bottom:10px; }
+        header p { font-size:1.3rem; margin-bottom:20px; max-width:700px; margin-left:auto; margin-right:auto; }
+        header a {
+            background:#fff; color:var(--primary); padding:12px 25px; border-radius:5px; font-weight:bold;
+            transition:0.3s;
+        }
+        header a:hover { background:#e6e6e6; }
+
+        /* Navbar */
+        nav {
+            position:fixed; top:0; width:100%; background:#fff; box-shadow:0 2px 5px rgba(0,0,0,0.1);
+            display:flex; justify-content:center; z-index:1000;
+        }
+        nav ul { display:flex; list-style:none; }
+        nav ul li { margin:0 15px; }
+        nav ul li a { display:block; padding:15px 0; color:var(--dark); font-weight:bold; transition:0.3s; }
+        nav ul li a:hover { color:var(--primary); }
 
         /* Sections */
-        section { margin-bottom:50px; }
-        .project { border:1px solid #ddd; padding:20px; border-radius:5px; margin-bottom:20px; }
-        .project img { max-width:100%; height:auto; border-radius:5px; }
+        section { padding:80px 20px; max-width:1000px; margin:auto; }
+        section:nth-child(even) { background: var(--secondary); border-radius:8px; margin-bottom:50px; padding:80px 20px; }
+
+        h2 { font-size:2rem; margin-bottom:20px; color:var(--primary); text-align:center; }
+        p { margin-bottom:15px; }
+
+        /* Projects */
+        .project { background:#fff; border-radius:8px; padding:25px; margin-bottom:25px; box-shadow:0 3px 8px rgba(0,0,0,0.1); transition:0.3s; }
+        .project:hover { transform:translateY(-5px); box-shadow:0 6px 12px rgba(0,0,0,0.15); }
+        .project img { max-width:100%; height:auto; border-radius:5px; margin-bottom:15px; }
 
         /* Skills */
-        .skills { display:flex; flex-wrap:wrap; gap:10px; }
-        .skills span { background:#2a9df4; color:#fff; padding:5px 10px; border-radius:3px; }
+        .skills { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; }
+        .skills span { background:var(--primary); color:#fff; padding:7px 15px; border-radius:20px; font-weight:bold; }
+
+        /* Contact */
+        #contact a { color:var(--primary); font-weight:bold; }
+        #contact a:hover { text-decoration:underline; }
 
         /* Footer */
         footer { text-align:center; padding:20px; font-size:0.9rem; color:#666; }
 
         /* Responsive */
-        @media(max-width:600px){
-            header h1 { font-size:2rem; }
-            header p { font-size:1rem; }
+        @media(max-width:768px){
+            header h1 { font-size:2.2rem; }
+            header p { font-size:1.1rem; }
+            nav ul li { margin:0 8px; }
         }
     </style>
 </head>
 <body>
 
+    <!-- Navbar -->
+    <nav>
+        <ul>
+            <li><a href="#about">About</a></li>
+            <li><a href="#work">Work</a></li>
+            <li><a href="#skills">Skills</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
     <!-- Hero Section -->
     <header>
-        <h1>Brad Rehahn</h1>
+        <h1>Sam Gold</h1>
         <p>Instructional Designer creating scalable eLearning that improves performance and reduces errors.</p>
         <a href="#work">View My Work</a>
     </header>
@@ -56,24 +102,24 @@
     <section id="work">
         <h2>Featured Work</h2>
 
-        <!-- Project 1 -->
         <div class="project">
+            <img src="https://via.placeholder.com/800x400?text=Project+1+Image" alt="eLearning Module Demo">
             <h3>eLearning Module Demo</h3>
             <p><strong>Problem:</strong> Employees needed a more engaging way to learn compliance procedures.</p>
             <p><strong>Solution:</strong> Developed an interactive Storyline module with branching scenarios and quizzes.</p>
             <p><strong>Tools:</strong> Articulate Storyline, Adobe Illustrator</p>
         </div>
 
-        <!-- Project 2 -->
         <div class="project">
+            <img src="https://via.placeholder.com/800x400?text=Project+2+Image" alt="Onboarding Guide">
             <h3>Onboarding Guide</h3>
             <p><strong>Problem:</strong> New hires struggled to understand company workflows quickly.</p>
             <p><strong>Solution:</strong> Created a visual, interactive Rise 360 course with embedded videos and checklists.</p>
             <p><strong>Tools:</strong> Rise 360, Canva</p>
         </div>
 
-        <!-- Project 3 -->
         <div class="project">
+            <img src="https://via.placeholder.com/800x400?text=Project+3+Image" alt="College Training Project">
             <h3>College Training Project</h3>
             <p><strong>Problem:</strong> Needed to demonstrate instructional design skills for portfolio purposes.</p>
             <p><strong>Solution:</strong> Designed a full course on workplace communication with assessments and scenario simulations.</p>
