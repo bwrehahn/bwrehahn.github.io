@@ -6,13 +6,53 @@
 <title>Sam Gold - Portfolio</title>
 <style>
 body { font-family: Arial, sans-serif; background: #f4f4f4; margin:0; padding:0; }
-header { text-align:center; padding:50px; background:#2a9df4; color:white; }
+
+/* Navbar */
+nav {
+    position: fixed;
+    top:0;
+    width:100%;
+    background:#ffffffcc;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    display:flex;
+    justify-content:center;
+    z-index:1000;
+}
+nav ul { display:flex; list-style:none; margin:0; padding:0; }
+nav ul li { margin:0 15px; }
+nav ul li a { display:block; padding:15px 0; color:#333; font-weight:bold; text-decoration:none; transition:0.3s; }
+nav ul li a:hover { color:#2a9df4; }
+
+/* Hero Section */
+@keyframes gradientShift {
+  0% { background-position:0% 50%; }
+  50% { background-position:100% 50%; }
+  100% { background-position:0% 50%; }
+}
+header {
+    text-align:center;
+    padding:100px 20px;
+    color:white;
+    background: linear-gradient(-45deg, #2a9df4, #6cc1ff, #00c6ff, #0059ff);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+}
+header h1 { font-size:3rem; margin-bottom:10px; text-shadow:0 2px 5px rgba(0,0,0,0.3); }
+header p { font-size:1.3rem; margin-bottom:20px; max-width:700px; margin:auto; text-shadow:0 1px 3px rgba(0,0,0,0.2);}
+header a {
+    background:#fff; color:#2a9df4; padding:12px 25px; border-radius:50px; font-weight:bold;
+    text-decoration:none; transition:0.3s;
+}
+header a:hover { background:#ff6b6b; color:white; }
+
+/* Sections */
 section { max-width:900px; margin:50px auto; padding:20px; background:white; border-radius:10px; }
 h2 { color:#2a9df4; text-align:center; margin-bottom:20px; }
 
 /* Project cards grid */
 .projects-container { display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px; }
-.project-card { background:white; border:1px solid #ccc; border-radius:8px; overflow:hidden; text-align:center; }
+.project-card { background:white; border:1px solid #ccc; border-radius:8px; overflow:hidden; text-align:center; transition: transform 0.3s, box-shadow 0.3s; }
+.project-card:hover { transform: scale(1.05); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
 .project-card img { width:100%; height:200px; object-fit:cover; }
 .project-card h3 { margin:10px 0; color:#2a9df4; }
 .project-card p { margin:0 10px 10px; font-size:0.9rem; color:#555; }
@@ -21,22 +61,36 @@ h2 { color:#2a9df4; text-align:center; margin-bottom:20px; }
 .skills { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-top:20px; }
 .skills span { background:#2a9df4; color:white; padding:5px 15px; border-radius:20px; }
 
-footer { text-align:center; padding:20px; color:#555; }
-
+/* Footer */
+footer { text-align:center; padding:20px; color:#555; margin-top:50px; }
 </style>
 </head>
 <body>
 
+<!-- Navbar -->
+<nav>
+    <ul>
+        <li><a href="#about">About</a></li>
+        <li><a href="#work">Work</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#contact">Contact</a></li>
+    </ul>
+</nav>
+
+<!-- Hero Section -->
 <header>
   <h1>Sam Gold</h1>
-  <p>Instructional Designer creating effective eLearning</p>
+  <p>Instructional Designer creating scalable eLearning that improves performance and reduces errors.</p>
+  <a href="#work">View My Work</a>
 </header>
 
+<!-- About Section -->
 <section id="about">
   <h2>About Me</h2>
-  <p>I have 10+ years of experience designing multimedia training solutions that improve workforce performance. Skilled in Articulate Storyline, Rise 360, and Adobe Creative Suite, with strong expertise in LMS platforms.</p>
+  <p>I have 10+ years of experience designing multimedia training solutions that enhance workforce performance. Skilled in Articulate Storyline, Rise 360, and Adobe Creative Suite, with strong expertise in LMS platforms and instructional design best practices.</p>
 </section>
 
+<!-- Work Section -->
 <section id="work">
   <h2>Featured Work</h2>
   <div class="projects-container">
@@ -58,6 +112,7 @@ footer { text-align:center; padding:20px; color:#555; }
   </div>
 </section>
 
+<!-- Skills Section -->
 <section id="skills">
   <h2>Skills</h2>
   <div class="skills">
@@ -70,6 +125,7 @@ footer { text-align:center; padding:20px; color:#555; }
   </div>
 </section>
 
+<!-- Contact Section -->
 <section id="contact">
   <h2>Contact</h2>
   <p>Email: <a href="mailto:bwrehahn@gmail.com">bwrehahn@gmail.com</a></p>
