@@ -5,7 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sam Gold - Portfolio</title>
 <style>
-body { font-family: Arial, sans-serif; background: #f4f4f4; margin:0; padding:0; }
+/* Static gradient for main page */
+body {
+    font-family: Arial, sans-serif;
+    margin:0;
+    padding:0;
+    background: linear-gradient(to bottom, #d0e7ff, #ffffff); /* static gradient */
+    color: #333;
+}
 
 /* Navbar */
 nav {
@@ -23,7 +30,7 @@ nav ul li { margin:0 15px; }
 nav ul li a { display:block; padding:15px 0; color:#333; font-weight:bold; text-decoration:none; transition:0.3s; }
 nav ul li a:hover { color:#2a9df4; }
 
-/* Hero Section */
+/* Hero Section with animated gradient */
 @keyframes gradientShift {
   0% { background-position:0% 50%; }
   50% { background-position:100% 50%; }
@@ -53,7 +60,15 @@ header a {
 header a:hover { background:#ff6b6b; color:white; }
 
 /* Sections */
-section { max-width:900px; margin:50px auto; padding:20px; background:white; border-radius:10px; }
+section {
+    max-width:900px;
+    margin:50px auto;
+    padding:20px;
+    border-radius:10px;
+    background: rgba(255,255,255,0.85); /* semi-transparent for static gradient */
+}
+
+/* Section titles */
 h2 { color:#2a9df4; text-align:center; margin-bottom:20px; }
 
 /* Flip Project cards grid */
@@ -78,16 +93,17 @@ h2 { color:#2a9df4; text-align:center; margin-bottom:20px; }
     overflow:hidden;
     border:1px solid #ccc;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    background:white;
     display:flex;
     flex-direction: column;
     justify-content:center;
     align-items:center;
     padding:10px;
+    background: rgba(255,255,255,0.9); /* cards remain readable */
+    color: #333;
 }
 .project-front img { width:100%; height:150px; object-fit:cover; }
 .project-front h3 { margin:10px 0; color:#2a9df4; }
-.project-front p { margin:0; font-size:0.9rem; color:#555; }
+.project-front p { margin:0; font-size:0.9rem; }
 
 .project-back {
     background:#2a9df4; color:white;
