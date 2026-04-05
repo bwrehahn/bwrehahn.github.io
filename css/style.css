@@ -84,7 +84,7 @@ h2 { color:#2a9df4; border-left:4px solid #667eea; padding-left:10px; margin-bot
     padding:15px;
 }
 .project-front { background:#fff; }
-.project-front img { width:100%; height:150px; object-fit:cover; border-radius:8px; margin-bottom:10px; }
+.project-front img { width:100%; height:150px; object-fit:contain; border-radius:8px; margin-bottom:10px; }
 .project-front h3 { margin:10px 0; color:#2a9df4; }
 .project-front p { font-size:0.9rem; }
 .project-back { background: #2a9df4; color:white; transform:rotateY(180deg); }
