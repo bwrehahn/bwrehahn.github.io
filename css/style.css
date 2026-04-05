@@ -143,3 +143,98 @@ footer { text-align:center; padding:25px; color:#555; margin-top:50px; }
     transition: 0.3s, transform 0.3s;
 }
 #backToTop:hover { background: #ff6b6b; transform: scale(1.1); }
+
+ /* -------------------------
+    Project Headers
+   ------------------------- */
+.project-title {
+    font-size: 2.8rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 15px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* -------------------------
+   Buttons (View More / Resume)
+   ------------------------- */
+.button, .resume-button, header a, .project-back a {
+    display: inline-block;
+    padding: 12px 28px;
+    border-radius: 50px;
+    font-weight: bold;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.button, .resume-button {
+    background: #ff6b6b;
+    color: #fff;
+}
+
+.button:hover, .resume-button:hover, header a:hover, .project-back a:hover {
+    background: #2a9df4;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+
+/* -------------------------
+   Project Cards / Images
+   ------------------------- */
+.project-card {
+    perspective: 1000px;
+    margin-bottom: 30px;
+}
+
+.project-inner {
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.project-card:hover .project-inner {
+    transform: rotateY(180deg);
+}
+
+.project-front img, .project-back img, .project-image {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    border-radius: 12px;
+}
+
+/* -------------------------
+   Section Background / Frosted Glass
+   ------------------------- */
+section.container {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 40px 20px;
+    margin: 50px auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* -------------------------
+   Back-to-top button polish
+   ------------------------- */
+#backToTop {
+    bottom: 40px;
+    right: 40px;
+    padding: 12px 18px;
+    border-radius: 50px;
+    font-size: 1rem;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+    transition: 0.3s, transform 0.3s;
+}
+
+#backToTop:hover {
+    transform: scale(1.1);
+    background: #ff6b6b;
+}
