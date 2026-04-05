@@ -49,13 +49,45 @@ header a:hover { background:#ff6b6b; color:white; }
 section { max-width:900px; margin:50px auto; padding:20px; background:white; border-radius:10px; }
 h2 { color:#2a9df4; text-align:center; margin-bottom:20px; }
 
-/* Project cards grid */
+/* Flip Project cards grid */
 .projects-container { display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px; }
-.project-card { background:white; border:1px solid #ccc; border-radius:8px; overflow:hidden; text-align:center; transition: transform 0.3s, box-shadow 0.3s; }
-.project-card:hover { transform: scale(1.05); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
-.project-card img { width:100%; height:200px; object-fit:cover; }
-.project-card h3 { margin:10px 0; color:#2a9df4; }
-.project-card p { margin:0 10px 10px; font-size:0.9rem; color:#555; }
+.project-card { perspective:1000px; }
+.project-inner {
+    position: relative;
+    width:100%;
+    height:300px;
+    text-align:center;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+}
+.project-card:hover .project-inner { transform: rotateY(180deg); }
+
+.project-front, .project-back {
+    position:absolute;
+    width:100%;
+    height:100%;
+    backface-visibility: hidden;
+    border-radius:8px;
+    overflow:hidden;
+    border:1px solid #ccc;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    background:white;
+    display:flex;
+    flex-direction: column;
+    justify-content:center;
+    align-items:center;
+    padding:10px;
+}
+.project-front img { width:100%; height:150px; object-fit:cover; }
+.project-front h3 { margin:10px 0; color:#2a9df4; }
+.project-front p { margin:0; font-size:0.9rem; color:#555; }
+
+.project-back {
+    background:#2a9df4; color:white;
+    transform: rotateY(180deg);
+}
+.project-back h3 { margin-bottom:10px; }
+.project-back p { font-size:0.9rem; padding:0 10px; text-align:center; }
 
 /* Skills */
 .skills { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-top:20px; }
@@ -95,19 +127,43 @@ footer { text-align:center; padding:20px; color:#555; margin-top:50px; }
   <h2>Featured Work</h2>
   <div class="projects-container">
     <div class="project-card">
-      <img src="https://picsum.photos/300/200?random=1" alt="Project 1">
-      <h3>eLearning Module</h3>
-      <p>Interactive Storyline module for compliance training.</p>
+      <div class="project-inner">
+        <div class="project-front">
+          <img src="https://picsum.photos/300/150?random=1" alt="Project 1">
+          <h3>eLearning Module</h3>
+          <p>Interactive Storyline module for compliance training.</p>
+        </div>
+        <div class="project-back">
+          <h3>Tools Used</h3>
+          <p>Articulate Storyline, Adobe Illustrator</p>
+        </div>
+      </div>
     </div>
     <div class="project-card">
-      <img src="https://picsum.photos/300/200?random=2" alt="Project 2">
-      <h3>Onboarding Guide</h3>
-      <p>Interactive Rise 360 course for new hires.</p>
+      <div class="project-inner">
+        <div class="project-front">
+          <img src="https://picsum.photos/300/150?random=2" alt="Project 2">
+          <h3>Onboarding Guide</h3>
+          <p>Interactive Rise 360 course for new hires.</p>
+        </div>
+        <div class="project-back">
+          <h3>Tools Used</h3>
+          <p>Rise 360, Canva</p>
+        </div>
+      </div>
     </div>
     <div class="project-card">
-      <img src="https://picsum.photos/300/200?random=3" alt="Project 3">
-      <h3>College Training Project</h3>
-      <p>Full course design for workplace communication.</p>
+      <div class="project-inner">
+        <div class="project-front">
+          <img src="https://picsum.photos/300/150?random=3" alt="Project 3">
+          <h3>College Training Project</h3>
+          <p>Full course design for workplace communication.</p>
+        </div>
+        <div class="project-back">
+          <h3>Tools Used</h3>
+          <p>Storyline, PowerPoint</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
