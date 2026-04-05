@@ -8,8 +8,15 @@ function scrollToTop() { window.scrollTo({ top:0, behavior:'smooth' }); }
 // Smooth scroll for navbar links
 document.querySelectorAll('nav a').forEach(link => {
   link.addEventListener('click', e => {
-    e.preventDefault();
-    const target = document.querySelector(link.getAttribute('href'));
-    if(target) target.scrollIntoView({ behavior:'smooth' });
+    const href = link.getAttribute('href');
+
+    // Only smooth scroll if it's an anchor on the SAME page
+    if (href.startsWith('#')) {
+      e.preventDefault();
+      const target = document.querySelector(href);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
   });
 });
