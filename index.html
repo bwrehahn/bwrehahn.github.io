@@ -40,10 +40,20 @@ header {
 header h1 { font-size:3rem; margin-bottom:10px; text-shadow:0 2px 5px rgba(0,0,0,0.3); }
 header p { font-size:1.3rem; margin-bottom:20px; max-width:700px; margin:auto; text-shadow:0 1px 3px rgba(0,0,0,0.2);}
 header a {
-    background:#fff; color:#2a9df4; padding:12px 25px; border-radius:50px; font-weight:bold;
-    text-decoration:none; transition:0.3s;
+    display: inline-block;     /* ensures it sits on its own line */
+    margin-top: 20px;          /* space above the button */
+    background:#fff; 
+    color:#2a9df4; 
+    padding:12px 25px; 
+    border-radius:50px; 
+    font-weight:bold;
+    text-decoration:none; 
+    transition:0.3s;
 }
-header a:hover { background:#ff6b6b; color:white; }
+header a:hover { 
+    background:#ff6b6b; 
+    color:white; 
+}
 
 /* Sections */
 section { max-width:900px; margin:50px auto; padding:20px; background:white; border-radius:10px; }
