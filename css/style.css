@@ -1,0 +1,119 @@
+/* css/style.css */
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family:'Poppins', sans-serif;
+    scroll-behavior:smooth;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color:#333;
+}
+a { text-decoration:none; }
+ul { list-style:none; }
+
+/* NAVBAR */
+nav {
+    position: fixed;
+    top:0;
+    width:100%;
+    display:flex;
+    justify-content:center;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    z-index:1000;
+}
+nav ul { display:flex; gap:30px; padding:15px 0; }
+nav ul li a { color:white; font-weight:600; padding: 5px 0; transition:0.3s; }
+nav ul li a:hover, nav ul li a.active { color:#ff6b6b; }
+
+/* HERO */
+header {
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    background: linear-gradient(-45deg, #2a9df4, #6cc1ff, #00c6ff, #0059ff);
+    background-size:400% 400%;
+    animation: gradientShift 15s ease infinite;
+    color:white;
+}
+@keyframes gradientShift { 0%{background-position:0% 50%;} 50%{background-position:100% 50%;} 100%{background-position:0% 50%;} }
+header h1 { font-size:3.5rem; margin-bottom:15px; text-shadow:0 2px 8px rgba(0,0,0,0.3); }
+header p { font-size:1.3rem; max-width:700px; text-shadow:0 1px 3px rgba(0,0,0,0.2); margin-bottom:25px; }
+header a { display:inline-block; background:white; color:#2a9df4; padding:15px 30px; border-radius:50px; font-weight:bold; transition:0.3s; }
+header a:hover { background:#ff6b6b; color:white; transform: translateY(-2px); }
+
+/* SECTIONS */
+section {
+    max-width:1100px;
+    margin:80px auto;
+    padding:30px 20px;
+    border-radius:16px;
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    animation: fadeIn 0.8s ease-in-out;
+}
+@keyframes fadeIn { from {opacity:0; transform:translateY(15px);} to{opacity:1; transform:translateY(0);} }
+h2 { color:#2a9df4; border-left:4px solid #667eea; padding-left:10px; margin-bottom:20px; }
+
+/* PROJECT CARDS */
+.projects-container { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap:25px; }
+.project-card { perspective:1000px; }
+.project-inner {
+    position:relative;
+    width:100%;
+    height:300px;
+    text-align:center;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+    border-radius:12px;
+}
+.project-card:hover .project-inner { transform: rotateY(180deg); }
+.project-front, .project-back {
+    position:absolute;
+    width:100%;
+    height:100%;
+    backface-visibility:hidden;
+    border-radius:12px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    padding:15px;
+}
+.project-front { background:#fff; }
+.project-front img { width:100%; height:150px; object-fit:cover; border-radius:8px; margin-bottom:10px; }
+.project-front h3 { margin:10px 0; color:#2a9df4; }
+.project-front p { font-size:0.9rem; }
+.project-back { background: #2a9df4; color:white; transform:rotateY(180deg); }
+.project-back h3 { margin-bottom:10px; }
+.project-back p { font-size:0.9rem; text-align:center; }
+.project-back a { margin-top:10px; padding:8px 18px; background:white; color:#2a9df4; border-radius:20px; font-weight:bold; transition:0.3s; }
+.project-back a:hover { background:#ff6b6b; color:white; }
+
+/* SKILLS */
+.skills { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; }
+.skills span { background:#2a9df4; color:white; padding:5px 15px; border-radius:20px; }
+
+/* FOOTER */
+footer { text-align:center; padding:25px; color:#555; margin-top:50px; }
+
+/* BACK TO TOP */
+#backToTop {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    padding: 12px 18px;
+    background: #2a9df4;
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: none;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+    transition: 0.3s, transform 0.3s;
+}
+#backToTop:hover { background: #ff6b6b; transform: scale(1.1); }
