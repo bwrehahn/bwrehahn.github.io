@@ -93,9 +93,11 @@ h2 { color:#2a9df4; border-left:4px solid #667eea; padding-left:10px; margin-bot
 .project-back a { margin-top:10px; padding:8px 18px; background:white; color:#2a9df4; border-radius:20px; font-weight:bold; transition:0.3s; }
 .project-back a:hover { background:#ff6b6b; color:white; }
 }
-.project-image{
-  display: flex;
-    justify-content: center;
+.project-image {
+    display: block;        /* REQUIRED for centering */
+    margin: 20px auto;     /* centers horizontally */
+    max-width: 100%;       /* responsive */
+    border-radius: 12px;
 }
 
 /* SKILLS */
