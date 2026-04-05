@@ -92,6 +92,11 @@ h2 { color:#2a9df4; border-left:4px solid #667eea; padding-left:10px; margin-bot
 .project-back p { font-size:0.9rem; text-align:center; }
 .project-back a { margin-top:10px; padding:8px 18px; background:white; color:#2a9df4; border-radius:20px; font-weight:bold; transition:0.3s; }
 .project-back a:hover { background:#ff6b6b; color:white; }
+}
+.project-image{
+  display: flex;
+    justify-content: center;
+}
 
 /* SKILLS */
 .skills { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; }
