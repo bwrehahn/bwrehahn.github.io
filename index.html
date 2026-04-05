@@ -3,261 +3,126 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Brad Rehahn - Portfolio</title>
-<style>
-/* Smooth scroll for navbar */
-html {
-    scroll-behavior: smooth;
-}
+<title>Sam Gold Portfolio</title>
 
-/* Static gradient for main page */
-body {
-    font-family: Arial, sans-serif;
-    margin:0;
-    padding:0;
-    background: linear-gradient(to bottom, #d0e7ff, #ffffff); /* static gradient */
-    color: #333;
-}
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
-/* Navbar */
-nav {
-    position: fixed;
-    top:0;
-    width:100%;
-    background:#ffffffcc;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    display:flex;
-    justify-content:center;
-    z-index:1000;
-}
-nav ul { display:flex; list-style:none; margin:0; padding:0; }
-nav ul li { margin:0 15px; }
-nav ul li a { display:block; padding:15px 0; color:#333; font-weight:bold; text-decoration:none; transition:0.3s; }
-nav ul li a:hover { color:#2a9df4; }
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-/* Hero Section with animated gradient */
-@keyframes gradientShift {
-  0% { background-position:0% 50%; }
-  50% { background-position:100% 50%; }
-  100% { background-position:0% 50%; }
-}
-header {
-    text-align:center;
-    padding:100px 20px;
-    color:white;
-    background: linear-gradient(-45deg, #2a9df4, #6cc1ff, #00c6ff, #0059ff);
-    background-size: 400% 400%;
-    animation: gradientShift 15s ease infinite;
-}
-header h1 { font-size:3rem; margin-bottom:10px; text-shadow:0 2px 5px rgba(0,0,0,0.3); }
-header p { font-size:1.3rem; margin-bottom:20px; max-width:700px; margin:auto; text-shadow:0 1px 3px rgba(0,0,0,0.2);}
-header a {
-    display: inline-block;
-    margin-top: 20px;
-    background:#fff; 
-    color:#2a9df4; 
-    padding:12px 25px; 
-    border-radius:50px; 
-    font-weight:bold;
-    text-decoration:none; 
-    transition:0.3s;
-}
-header a:hover { background:#ff6b6b; color:white; }
+<!-- Global CSS -->
+<link rel="stylesheet" href="css/style.css">
 
-/* Sections */
-section {
-    max-width:900px;
-    margin:50px auto;
-    padding:20px;
-    border-radius:10px;
-    background: rgba(255,255,255,0.85); /* semi-transparent for static gradient */
-}
-
-/* Section titles */
-h2 { color:#2a9df4; text-align:center; margin-bottom:20px; }
-
-/* Flip Project cards grid */
-.projects-container { display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px; }
-.project-card { perspective:1000px; }
-.project-inner {
-    position: relative;
-    width:100%;
-    height:300px;
-    text-align:center;
-    transition: transform 0.8s;
-    transform-style: preserve-3d;
-}
-.project-card:hover .project-inner { transform: rotateY(180deg); }
-
-.project-front, .project-back {
-    position:absolute;
-    width:100%;
-    height:100%;
-    backface-visibility: hidden;
-    border-radius:8px;
-    overflow:hidden;
-    border:1px solid #ccc;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    display:flex;
-    flex-direction: column;
-    justify-content:center;
-    align-items:center;
-    padding:10px;
-    background: rgba(255,255,255,0.9); /* cards remain readable */
-    color: #333;
-}
-.project-front img { width:100%; height:150px; object-fit: contain; }
-.project-front h3 { margin:10px 0; color:#2a9df4; }
-.project-front p { margin:0; font-size:0.9rem; }
-
-.project-back {
-    background:#2a9df4; color:white;
-    transform: rotateY(180deg);
-}
-.project-back h3 { margin-bottom:10px; }
-.project-back p { font-size:0.9rem; padding:0 10px; text-align:center; }
-
-/* Skills */
-.skills { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-top:20px; }
-.skills span { background:#2a9df4; color:white; padding:5px 15px; border-radius:20px; }
-
-/* Footer */
-footer { text-align:center; padding:20px; color:#555; margin-top:50px; }
-
-/* Back to Top Button */
-#backToTop {
-    position: fixed;
-    bottom: 40px;
-    right: 40px;
-    padding: 12px 18px;
-    background: #2a9df4;
-    color: #fff;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    font-size: 1rem;
-    display: none;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.25);
-    transition: 0.3s, transform 0.3s;
-}
-#backToTop:hover {
-    background: #ff6b6b;
-    transform: scale(1.1);
-}
-</style>
 </head>
 <body>
 
-<!-- Navbar -->
+<!-- NAVBAR -->
 <nav>
-    <ul>
-        <li><a href="#about">About</a></li>
-        <li><a href="#work">Work</a></li>
-        <li><a href="#skills">Skills</a></li>
-        <li><a href="#contact">Contact</a></li>
-    </ul>
+  <ul>
+    <li><a href="#about">About</a></li>
+    <li><a href="#work">Work</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
 </nav>
 
-<!-- Hero Section -->
+<!-- HERO SECTION -->
 <header>
-  <h1>Brad Rehahn</h1>
-  <p>Instructional Designer creating scalable eLearning that improves performance and reduces errors.</p>
+  <h1>Sam Gold</h1>
+  <p>Instructional Designer creating interactive learning that improves performance.</p>
   <a href="#work">View My Work</a>
 </header>
 
-<!-- About Section -->
-<section id="about">
+<!-- ABOUT -->
+<section id="about" class="container">
   <h2>About Me</h2>
-  <p>I have 10+ years of experience designing multimedia training solutions that enhance workforce performance. Skilled in Articulate Storyline, Rise 360, and Adobe Creative Suite, with strong expertise in LMS platforms and instructional design best practices.</p>
+  <p>I have 10+ years of experience designing eLearning and multimedia training solutions that boost workforce performance. Skilled in Articulate Storyline, Rise 360, Adobe Creative Suite, and LMS platforms.</p>
 </section>
 
-<!-- Work Section -->
-<section id="work">
+<!-- WORK -->
+<section id="work" class="container">
   <h2>Featured Work</h2>
   <div class="projects-container">
+
+    <!-- PROJECT 1 -->
     <div class="project-card">
       <div class="project-inner">
         <div class="project-front">
-          <img src="images/State-park.jpg" alt="State Park Guide">
+          <img src="images/project1.png" alt="Project 1">
           <h3>eLearning Module</h3>
-          <p>Interactive Lectora Module created for the State Park to promote safe hiking.</p>
+          <p>Interactive compliance training</p>
         </div>
         <div class="project-back">
           <h3>Tools Used</h3>
-          <p>Lectora, Adobe Photoshop, Adobe Premiere</p>
+          <p>Storyline, Illustrator</p>
+          <a href="project1.html">View More</a>
         </div>
       </div>
     </div>
+
+    <!-- PROJECT 2 -->
     <div class="project-card">
       <div class="project-inner">
         <div class="project-front">
-          <img src="images/seo-screenshot.JPG" alt="SEO Improvement Screenshot">
-          <h3>eLearning Module</h3>
-          <p>Interactive Lectora Module created to educate users on improving their SEO</p>
+          <img src="images/project2.png" alt="Project 2">
+          <h3>Onboarding Guide</h3>
+          <p>Interactive Rise 360 course</p>
         </div>
         <div class="project-back">
           <h3>Tools Used</h3>
-          <p>Lectora, photoshop</p>
+          <p>Rise 360, Canva</p>
+          <a href="project2.html">View More</a>
         </div>
       </div>
     </div>
+
+    <!-- PROJECT 3 -->
     <div class="project-card">
       <div class="project-inner">
         <div class="project-front">
-          <img src="images/website-screenshot.JPG" alt="website screenshot">
-          <h3>Instructional Website</h3>
-          <p>Instructional website created to promote how to be a dungeon master.</p>
+          <img src="images/project3.png" alt="Project 3">
+          <h3>College Training Project</h3>
+          <p>Interactive instructional content</p>
         </div>
         <div class="project-back">
           <h3>Tools Used</h3>
-          <p>Adobe Photoshop, Adobe Dreamweaver</p>
+          <p>Storyline, Illustrator</p>
+          <a href="project3.html">View More</a>
         </div>
       </div>
     </div>
+
   </div>
 </section>
 
-<!-- Skills Section -->
-<section id="skills">
+<!-- SKILLS -->
+<section id="skills" class="container">
   <h2>Skills</h2>
   <div class="skills">
-    <span>Articulate Storyline 360</span>
+    <span>Articulate Storyline</span>
     <span>Rise 360</span>
     <span>Adobe Creative Suite</span>
-      <span>Adobe Captivate</span>
-      <span>Lectora</span>
     <span>LMS Platforms</span>
     <span>Instructional Design</span>
-    <span>eLearning Development</span>
-      <span>HTML & CSS</span>
-      <span>Audits</span>
   </div>
 </section>
 
-<!-- Contact Section -->
-<section id="contact">
+<!-- CONTACT -->
+<section id="contact" class="container">
   <h2>Contact</h2>
   <p>Email: <a href="mailto:bwrehahn@gmail.com">bwrehahn@gmail.com</a></p>
-  <p>LinkedIn: <a href="https://www.linkedin.com/in/brad-rehahn-468b5913/" target="_blank">linkedin.com/in/Brad-Rehahn</a></p>
+  <p>LinkedIn: <a href="https://www.linkedin.com/in/sam-gold/" target="_blank">linkedin.com/in/sam-gold</a></p>
 </section>
 
-<footer>&copy; 2026 Brad Rehahn</footer>
+<!-- FOOTER -->
+<footer>&copy; 2026 Sam Gold</footer>
 
-<!-- Back to Top Button -->
+<!-- BACK TO TOP BUTTON -->
 <button id="backToTop" onclick="scrollToTop()">↑ Top</button>
 
-<script>
-// Show/hide Back to Top button
-const backBtn = document.getElementById('backToTop');
-window.addEventListener('scroll', () => {
-    backBtn.style.display = (window.scrollY > 300) ? 'block' : 'none';
-});
-
-// Scroll to top smoothly
-function scrollToTop() {
-    window.scrollTo({ top:0, behavior:'smooth' });
-}
-</script>
+<!-- Global JS -->
+<script src="js/scripts.js"></script>
 
 </body>
 </html>
