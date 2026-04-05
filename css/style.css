@@ -254,3 +254,21 @@ section.container {
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
+.project-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    border-radius: 12px;
+    color: white; /* text color */
+    background: linear-gradient(270deg, #667eea, #764ba2, #5a6edc);
+    background-size: 600% 600%; /* allows animation movement */
+    animation: backgroundGradient 8s ease infinite;
+    text-align: center;
+}
+
+@keyframes backgroundGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
