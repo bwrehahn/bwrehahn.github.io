@@ -42,7 +42,7 @@ header {
 @keyframes gradientShift { 0%{background-position:0% 50%;} 50%{background-position:100% 50%;} 100%{background-position:0% 50%;} }
 header h1 { font-size:3.5rem; margin-bottom:15px; text-shadow:0 2px 8px rgba(0,0,0,0.3); }
 header p { font-size:1.3rem; max-width:700px; text-shadow:0 1px 3px rgba(0,0,0,0.2); margin-bottom:25px; }
-header a { display:inline-block; background:white; color:#2a9df4; padding:15px 30px; border-radius:50px; font-weight:bold; transition:0.3s; }
+header a { display:inline-block; background:white; color:#2a9df4; padding:15px 30px; border-radius:50px; font-weight:bold; transition:0.3s; margin-bottom: 40px; }
 header a:hover { background:#ff6b6b; color:white; transform: translateY(-2px); }
 
 .project-hero {
