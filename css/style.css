@@ -26,14 +26,14 @@ nav ul li a:hover, nav ul li a.active { color:#ff6b6b; }
 
 /* HERO */
 header {
-    height:50vh;
+    min-height:60vh;
     display:flex;
     flex-direction:column;
     justify-content:center;
     align-items:center;
     text-align:center;
     padding-top: clamp(80px, 10vh, 120px);
-    padding-bottom: clamp(80px, 10vh, 120px);
+    
  background: linear-gradient(-45deg, #2a9df4, #6cc1ff, #00c6ff, #0059ff);
     background-size:400% 400%;
     animation: gradientShift 15s ease infinite;
