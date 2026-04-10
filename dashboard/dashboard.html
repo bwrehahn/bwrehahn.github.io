@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Stable Enterprise Dashboard</title>
+<title>Senior SaaS Analytics Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -33,14 +33,9 @@ body{
 .header{
   display:flex;
   justify-content:space-between;
+  align-items:center;
   padding:15px;
   border-bottom:1px solid #1f2a44;
-  align-items:center;
-}
-
-.actions{
-  display:flex;
-  gap:10px;
 }
 
 button{
@@ -49,6 +44,22 @@ button{
   border:none;
   padding:6px 10px;
   border-radius:8px;
+  cursor:pointer;
+}
+
+/* FILTER CHIPS */
+.chips{
+  display:flex;
+  gap:8px;
+  padding:10px 15px;
+  flex-wrap:wrap;
+}
+
+.chip{
+  background:var(--card);
+  padding:6px 10px;
+  border-radius:20px;
+  font-size:12px;
   cursor:pointer;
 }
 
@@ -62,7 +73,7 @@ button{
 
 .kpi{
   background:var(--card);
-  padding:15px;
+  padding:12px;
   border-radius:12px;
 }
 
@@ -73,28 +84,29 @@ button{
 }
 
 .kpi p{
-  font-size:20px;
-  margin:8px 0 0;
+  font-size:18px;
+  margin:6px 0 0;
 }
 
 /* GRID */
 .grid{
   display:grid;
-  grid-template-columns:repeat(2,1fr);
+  grid-template-columns:repeat(2, minmax(0, 1fr));
   gap:15px;
   padding:15px;
 }
 
-.box{
+.card{
   background:var(--card);
   border-radius:12px;
   padding:12px;
   height:320px;
 }
 
+/* FIXED CHART BEHAVIOR */
 canvas{
-  width:100%!important;
-  height:100%!important;
+  width:100% !important;
+  height:100% !important;
 }
 
 /* TABLE */
@@ -121,13 +133,16 @@ th{
 <body>
 
 <div class="header">
-  <div><b>Analytics Dashboard</b></div>
+  <div><b>Senior Analytics Dashboard</b></div>
 
-  <div class="actions">
+  <div>
     <input type="file" id="file">
     <button onclick="toggleTheme()">🌙 Theme</button>
+    <button onclick="exportCSV()">Export</button>
   </div>
 </div>
+
+<div class="chips" id="chips"></div>
 
 <div class="kpis">
   <div class="kpi"><h4>Revenue</h4><p id="rev">$0</p></div>
@@ -137,19 +152,16 @@ th{
 </div>
 
 <div class="grid">
-  <div class="box"><canvas id="c1"></canvas></div>
-  <div class="box"><canvas id="c2"></canvas></div>
-  <div class="box"><canvas id="c3"></canvas></div>
-  <div class="box"><canvas id="c4"></canvas></div>
+  <div class="card"><canvas id="c1"></canvas></div>
+  <div class="card"><canvas id="c2"></canvas></div>
+  <div class="card"><canvas id="c3"></canvas></div>
+  <div class="card"><canvas id="c4"></canvas></div>
 </div>
 
 <table>
 <thead>
 <tr>
-<th>Date</th>
-<th>Product</th>
-<th>Region</th>
-<th>Revenue</th>
+<th>Date</th><th>Product</th><th>Region</th><th>Revenue</th>
 </tr>
 </thead>
 <tbody id="table"></tbody>
@@ -159,102 +171,119 @@ th{
 
 let raw=[];
 let charts=[];
+let filters={product:null,region:null};
 
 /* THEME */
 function toggleTheme(){
   document.body.classList.toggle("light");
 }
 
-/* SAFE FILE LOADER (FIXED) */
-document.getElementById('file').addEventListener('change', function(e){
+/* CLEAN EXCEL ROWS (FIXES UNDEFINED) */
+function cleanRow(row){
+  let clean={};
 
-  const file = e.target.files[0];
-  if(!file){
-    alert("No file selected");
-    return;
-  }
+  Object.keys(row).forEach(k=>{
+    let key=k.trim().toLowerCase();
 
-  const reader = new FileReader();
+    if(key.includes("product")) clean.Product=row[k];
+    else if(key.includes("region")) clean.Region=row[k];
+    else if(key.includes("date")) clean.Date=row[k];
+    else if(key.includes("revenue")) clean.Revenue=row[k];
+  });
 
-  reader.onload = function(event){
+  return clean;
+}
 
-    try {
+/* FILE LOAD */
+document.getElementById('file').addEventListener('change',e=>{
+  let file=e.target.files[0];
+  let reader=new FileReader();
 
-      const workbook = XLSX.read(event.target.result, {
-        type: "binary",
-        cellDates: true
-      });
+  reader.onload=ev=>{
+    let wb=XLSX.read(ev.target.result,{type:"binary"});
+    let sheet=wb.Sheets[wb.SheetNames[0]];
 
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
+    let json=XLSX.utils.sheet_to_json(sheet,{defval:""});
 
-      let json = XLSX.utils.sheet_to_json(sheet, {
-        defval: ""
-      });
+    raw=json.map(cleanRow).filter(r=>r.Product&&r.Region&&r.Date);
 
-      // CLEAN HEADERS
-      raw = json.map(row => {
-        let clean = {};
-        Object.keys(row).forEach(k => {
-          clean[String(k).trim()] = row[k];
-        });
-        return clean;
-      });
-
-      if(!raw.length){
-        alert("No data found in Excel file");
-        return;
-      }
-
-      render();
-
-    } catch(err){
-      console.error(err);
-      alert("Failed to read Excel file. Check format.");
-    }
+    render();
   };
 
   reader.readAsBinaryString(file);
-
 });
 
-/* MAIN RENDER */
+/* FILTER */
+function setFilter(type,val){
+  filters[type]=val;
+  render();
+}
+
+function clearFilters(){
+  filters={product:null,region:null};
+  render();
+}
+
+/* EXPORT */
+function exportCSV(){
+  let csv="Date,Product,Region,Revenue\n";
+  raw.forEach(r=>{
+    csv+=`${r.Date},${r.Product},${r.Region},${r.Revenue}\n`;
+  });
+  let blob=new Blob([csv],{type:"text/csv"});
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="export.csv";
+  a.click();
+}
+
+/* RENDER */
 function render(){
 
-  let rev=0;
-  let p={},r={},d={};
+  let data=raw.filter(r=>{
+    return (!filters.product||r.Product===filters.product)&&
+           (!filters.region||r.Region===filters.region);
+  });
 
-  raw.forEach(x=>{
+  let rev=0,p={},r={},d={};
 
-    let product=(x.Product||"").trim();
-    let region=(x.Region||"").trim();
-    let date=(x.Date||"").toString().trim();
-    let value=Number(x.Revenue)||0;
+  data.forEach(x=>{
+    let v=Number(x.Revenue)||0;
+    rev+=v;
 
-    if(!product||!region||!date) return;
-
-    rev+=value;
-
-    p[product]=(p[product]||0)+value;
-    r[region]=(r[region]||0)+value;
-    d[date]=(d[date]||0)+value;
+    p[x.Product]=(p[x.Product]||0)+v;
+    r[x.Region]=(r[x.Region]||0)+v;
+    d[x.Date]=(d[x.Date]||0)+v;
   });
 
   let top=Object.keys(p).reduce((a,b)=>p[a]>p[b]?a:b,"-");
 
   document.getElementById("rev").innerText="$"+rev.toLocaleString();
-  document.getElementById("ord").innerText=raw.length;
+  document.getElementById("ord").innerText=data.length;
   document.getElementById("top").innerText=top;
-  document.getElementById("avg").innerText="$"+(rev/(raw.length||1)).toFixed(2);
+  document.getElementById("avg").innerText="$"+(rev/(data.length||1)).toFixed(2);
 
-  renderTable();
+  renderChips();
+  renderTable(data);
   renderCharts(p,r,d);
 }
 
+/* CHIPS */
+function renderChips(){
+  let c=document.getElementById("chips");
+  c.innerHTML="";
+
+  if(filters.product)
+    c.innerHTML+=`<div class="chip" onclick="setFilter('product',null)">Product: ${filters.product} ✕</div>`;
+
+  if(filters.region)
+    c.innerHTML+=`<div class="chip" onclick="setFilter('region',null)">Region: ${filters.region} ✕</div>`;
+}
+
 /* TABLE */
-function renderTable(){
-  document.getElementById("table").innerHTML =
-    raw.map(r=>`
+function renderTable(data){
+  document.getElementById("table").innerHTML=
+    data.map(r=>`
       <tr>
         <td>${r.Date}</td>
         <td>${r.Product}</td>
@@ -264,7 +293,7 @@ function renderTable(){
     `).join("");
 }
 
-/* CHARTS */
+/* CHARTS (SAFE + STABLE) */
 function renderCharts(p,r,d){
 
   charts.forEach(c=>c.destroy());
@@ -272,36 +301,39 @@ function renderCharts(p,r,d){
 
   charts.push(new Chart(c1,{
     type:"bar",
-    data:{
-      labels:Object.keys(p),
-      datasets:[{data:Object.values(p)}]
+    data:{labels:Object.keys(p),datasets:[{data:Object.values(p)}]},
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      onClick:(e,i)=>{
+        if(i.length)setFilter("product",Object.keys(p)[i[0].index]);
+      }
     }
   }));
 
   charts.push(new Chart(c2,{
     type:"pie",
-    data:{
-      labels:Object.keys(r),
-      datasets:[{data:Object.values(r)}]
+    data:{labels:Object.keys(r),datasets:[{data:Object.values(r)}]},
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      onClick:(e,i)=>{
+        if(i.length)setFilter("region",Object.keys(r)[i[0].index]);
+      }
     }
   }));
 
   charts.push(new Chart(c3,{
     type:"line",
-    data:{
-      labels:Object.keys(d),
-      datasets:[{data:Object.values(d)}]
-    }
+    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
+    options:{responsive:true,maintainAspectRatio:false}
   }));
 
   charts.push(new Chart(c4,{
     type:"bar",
-    data:{
-      labels:Object.keys(d),
-      datasets:[{data:Object.values(d)}]
-    }
+    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
+    options:{responsive:true,maintainAspectRatio:false}
   }));
-
 }
 
 </script>
