@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>Sales Dashboard</title>
 
   <!-- Chart.js -->
@@ -48,26 +49,35 @@
     }
 
     .card p {
-      font-size: 24px;
-      margin-top: 10px;
+      font-size: 22px;
       font-weight: bold;
+      margin-top: 10px;
     }
 
     .charts {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap: 20px;
     }
 
-    canvas {
+    .chart-box {
       background: white;
-      padding: 15px;
+      padding: 10px;
       border-radius: 12px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     }
 
-    @media (max-width: 800px) {
-      .charts, .cards {
+    canvas {
+      width: 100% !important;
+      height: 240px !important;
+    }
+
+    @media (max-width: 1000px) {
+      .charts {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .cards {
         grid-template-columns: 1fr;
       }
     }
@@ -87,10 +97,12 @@
     <h3>Total Revenue</h3>
     <p id="totalRevenue">$0</p>
   </div>
+
   <div class="card">
     <h3>Total Orders</h3>
     <p id="totalOrders">0</p>
   </div>
+
   <div class="card">
     <h3>Top Product</h3>
     <p id="topProduct">-</p>
@@ -98,9 +110,11 @@
 </div>
 
 <div class="charts">
-  <canvas id="revenueChart"></canvas>
-  <canvas id="productChart"></canvas>
-  <canvas id="regionChart"></canvas>
+  <div class="chart-box"><canvas id="revenueChart"></canvas></div>
+  <div class="chart-box"><canvas id="productChart"></canvas></div>
+  <div class="chart-box"><canvas id="regionChart"></canvas></div>
+  <div class="chart-box"><canvas id="ordersChart"></canvas></div>
+  <div class="chart-box"><canvas id="avgChart"></canvas></div>
 </div>
 
 <script>
@@ -129,6 +143,7 @@ function processData(data) {
   const revenueByDate = {};
   const revenueByProduct = {};
   const revenueByRegion = {};
+  const ordersByDate = {};
 
   let totalRevenue = 0;
 
@@ -140,6 +155,8 @@ function processData(data) {
     revenueByDate[row.Date] = (revenueByDate[row.Date] || 0) + revenue;
     revenueByProduct[row.Product] = (revenueByProduct[row.Product] || 0) + revenue;
     revenueByRegion[row.Region] = (revenueByRegion[row.Region] || 0) + revenue;
+
+    ordersByDate[row.Date] = (ordersByDate[row.Date] || 0) + 1;
   });
 
   const topProduct = Object.keys(revenueByProduct).reduce((a, b) =>
@@ -150,14 +167,15 @@ function processData(data) {
   document.getElementById("totalOrders").innerText = data.length;
   document.getElementById("topProduct").innerText = topProduct;
 
-  createCharts(revenueByDate, revenueByProduct, revenueByRegion);
+  createCharts(revenueByDate, revenueByProduct, revenueByRegion, ordersByDate);
 }
 
-function createCharts(dateData, productData, regionData) {
+function createCharts(dateData, productData, regionData, ordersByDate) {
 
-  charts.forEach(chart => chart.destroy());
+  charts.forEach(c => c.destroy());
   charts = [];
 
+  // Revenue over time
   charts.push(new Chart(document.getElementById("revenueChart"), {
     type: 'line',
     data: {
@@ -170,6 +188,7 @@ function createCharts(dateData, productData, regionData) {
     }
   }));
 
+  // Revenue by product
   charts.push(new Chart(document.getElementById("productChart"), {
     type: 'bar',
     data: {
@@ -182,6 +201,7 @@ function createCharts(dateData, productData, regionData) {
     }
   }));
 
+  // Revenue by region
   charts.push(new Chart(document.getElementById("regionChart"), {
     type: 'pie',
     data: {
@@ -190,6 +210,36 @@ function createCharts(dateData, productData, regionData) {
         label: 'Revenue by Region',
         data: Object.values(regionData),
         borderWidth: 1
+      }]
+    }
+  }));
+
+  // Orders per day
+  charts.push(new Chart(document.getElementById("ordersChart"), {
+    type: 'bar',
+    data: {
+      labels: Object.keys(ordersByDate),
+      datasets: [{
+        label: 'Orders per Day',
+        data: Object.values(ordersByDate),
+        borderWidth: 2
+      }]
+    }
+  }));
+
+  // Average revenue per order
+  const avg = Object.keys(dateData).map(date =>
+    dateData[date] / (ordersByDate[date] || 1)
+  );
+
+  charts.push(new Chart(document.getElementById("avgChart"), {
+    type: 'line',
+    data: {
+      labels: Object.keys(dateData),
+      datasets: [{
+        label: 'Avg Revenue per Order',
+        data: avg,
+        borderWidth: 2
       }]
     }
   }));
