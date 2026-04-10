@@ -54,18 +54,36 @@
       margin-top: 10px;
     }
 
-    .charts {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-    }
+.charts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
 
-    .chart-box {
-      background: white;
-      padding: 10px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    }
+/* normal charts */
+.chart-box {
+  background: white;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+/* make pie chart bigger and not squished */
+.chart-box canvas {
+  width: 100% !important;
+  height: 240px !important;
+}
+
+/* SPECIAL FIX for pie chart */
+#regionChart {
+  height: 300px !important;
+}
+
+@media (max-width: 1000px) {
+  .charts {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 
     canvas {
       width: 100% !important;
