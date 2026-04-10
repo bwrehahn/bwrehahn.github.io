@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Senior SaaS Dashboard</title>
+<title>Enterprise Dashboard (Fixed)</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -15,7 +15,6 @@
   --muted:#94a3b8;
 }
 
-/* LIGHT MODE */
 body.light{
   --bg:#f4f6f8;
   --card:#ffffff;
@@ -51,10 +50,6 @@ button{
   padding:6px 10px;
   border-radius:8px;
   cursor:pointer;
-}
-
-button:hover{
-  opacity:.85;
 }
 
 /* CHIPS */
@@ -107,7 +102,7 @@ button:hover{
   color:var(--muted);
 }
 
-/* CHART GRID (FIXED) */
+/* GRID FIX */
 .grid{
   display:grid;
   grid-template-columns:repeat(2, minmax(0, 1fr));
@@ -120,10 +115,8 @@ button:hover{
   border-radius:12px;
   padding:12px;
   height:320px;
-  position:relative;
 }
 
-/* FIX: prevents squished charts */
 canvas{
   width:100%!important;
   height:100%!important;
@@ -153,9 +146,8 @@ th{
 
 <body>
 
-<!-- HEADER -->
 <div class="header">
-  <div><b>Senior Analytics Dashboard</b></div>
+  <div><b>Enterprise Dashboard</b></div>
 
   <div class="actions">
     <input type="file" id="file">
@@ -164,10 +156,8 @@ th{
   </div>
 </div>
 
-<!-- FILTER CHIPS -->
 <div class="chips" id="chips"></div>
 
-<!-- KPI -->
 <div class="kpis">
   <div class="kpi"><h4>Revenue</h4><p id="rev">$0</p></div>
   <div class="kpi"><h4>Orders</h4><p id="ord">0</p></div>
@@ -175,10 +165,8 @@ th{
   <div class="kpi"><h4>Avg Order</h4><p id="avg">$0</p></div>
 </div>
 
-<!-- INSIGHT -->
-<div class="insight" id="insight">Upload file to begin analysis...</div>
+<div class="insight" id="insight">Upload Excel file to begin...</div>
 
-<!-- CHARTS -->
 <div class="grid">
   <div class="box"><canvas id="c1"></canvas></div>
   <div class="box"><canvas id="c2"></canvas></div>
@@ -186,7 +174,6 @@ th{
   <div class="box"><canvas id="c4"></canvas></div>
 </div>
 
-<!-- TABLE -->
 <table>
 <thead>
 <tr>
@@ -202,24 +189,37 @@ let raw=[];
 let filters={product:null,region:null};
 let charts=[];
 
-/* THEME TOGGLE */
+/* THEME */
 function toggleTheme(){
   document.body.classList.toggle("light");
 }
 
-/* FILE LOAD */
+/* FILE LOAD (FIXED HEADER NORMALIZATION) */
 document.getElementById('file').onchange=e=>{
   let r=new FileReader();
+
   r.onload=ev=>{
     let wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
     let sh=wb.Sheets[wb.SheetNames[0]];
-    raw=XLSX.utils.sheet_to_json(sh);
+
+    let json=XLSX.utils.sheet_to_json(sh,{defval:""});
+
+    // 🔥 FIX: normalize keys (removes hidden spaces)
+    raw=json.map(row=>{
+      let clean={};
+      Object.keys(row).forEach(k=>{
+        clean[k.trim()]=row[k];
+      });
+      return clean;
+    });
+
     render();
   };
+
   r.readAsArrayBuffer(e.target.files[0]);
 };
 
-/* FILTER */
+/* FILTERS */
 function setFilter(type,value){
   filters[type]=value;
   render();
@@ -239,11 +239,11 @@ function exportCSV(){
   let blob=new Blob([csv],{type:"text/csv"});
   let a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
-  a.download="data.csv";
+  a.download="export.csv";
   a.click();
 }
 
-/* RENDER */
+/* MAIN RENDER */
 function render(){
 
   let data=raw.filter(r=>{
@@ -254,11 +254,20 @@ function render(){
   let rev=0,p={},r={},d={};
 
   data.forEach(x=>{
-    let v=+x.Revenue||0;
-    rev+=v;
-    p[x.Product]=(p[x.Product]||0)+v;
-    r[x.Region]=(r[x.Region]||0)+v;
-    d[x.Date]=(d[x.Date]||0)+v;
+
+    // 🔥 SAFE ACCESS (prevents undefined)
+    let product=(x.Product||"").trim();
+    let region=(x.Region||"").trim();
+    let date=(x.Date||"").trim();
+    let value=Number(x.Revenue)||0;
+
+    if(!product||!region||!date) return;
+
+    rev+=value;
+
+    p[product]=(p[product]||0)+value;
+    r[region]=(r[region]||0)+value;
+    d[date]=(d[date]||0)+value;
   });
 
   let top=Object.keys(p).reduce((a,b)=>p[a]>p[b]?a:b,"-");
@@ -269,7 +278,7 @@ function render(){
   document.getElementById('avg').innerText="$"+(rev/(data.length||1)).toFixed(2);
 
   document.getElementById('insight').innerText=
-    `Insight: ${top} is leading revenue. Total revenue: $${rev.toLocaleString()}`;
+    `Insight: ${top} is top performer. Revenue: $${rev.toLocaleString()}`;
 
   renderChips();
   renderTable(data);
@@ -300,7 +309,7 @@ function renderTable(data){
       </tr>`).join('');
 }
 
-/* CHARTS + DRILLDOWN */
+/* CHARTS */
 function renderCharts(p,r,d){
 
   charts.forEach(c=>c.destroy());
@@ -309,37 +318,27 @@ function renderCharts(p,r,d){
   charts.push(new Chart(c1,{
     type:'bar',
     data:{labels:Object.keys(p),datasets:[{data:Object.values(p)}]},
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      onClick:(e,i)=>{
-        if(i.length)setFilter('product',Object.keys(p)[i[0].index]);
-      }
-    }
+    options:{onClick:(e,i)=>{
+      if(i.length)setFilter('product',Object.keys(p)[i[0].index]);
+    }}
   }));
 
   charts.push(new Chart(c2,{
     type:'pie',
     data:{labels:Object.keys(r),datasets:[{data:Object.values(r)}]},
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      onClick:(e,i)=>{
-        if(i.length)setFilter('region',Object.keys(r)[i[0].index]);
-      }
-    }
+    options:{onClick:(e,i)=>{
+      if(i.length)setFilter('region',Object.keys(r)[i[0].index]);
+    }}
   }));
 
   charts.push(new Chart(c3,{
     type:'line',
-    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
-    options:{responsive:true,maintainAspectRatio:false}
+    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]}
   }));
 
   charts.push(new Chart(c4,{
     type:'bar',
-    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
-    options:{responsive:true,maintainAspectRatio:false}
+    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]}
   }));
 }
 
