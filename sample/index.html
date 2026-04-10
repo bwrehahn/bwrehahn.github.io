@@ -10,6 +10,7 @@
             --black: #0a0a0a;
             --white: #ffffff;
             --gray: #1a1a1a;
+            --dark-gray: #111;
         }
 
         body {
@@ -45,19 +46,17 @@
             color: var(--white);
             text-decoration: none;
             margin-left: 20px;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
             transition: color 0.3s;
         }
 
-        .nav-links a:hover {
-            color: var(--gold);
-        }
+        .nav-links a:hover { color: var(--gold); }
 
         /* Hero Section */
         .hero {
             text-align: center;
-            padding: 8rem 10%;
+            padding: 10rem 10%;
             background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070');
             background-size: cover;
             background-position: center;
@@ -78,6 +77,8 @@
             font-weight: bold;
             margin-top: 2rem;
             transition: 0.3s;
+            border: none;
+            cursor: pointer;
         }
 
         .cta-button:hover {
@@ -85,80 +86,66 @@
             transform: translateY(-3px);
         }
 
-        /* Content Sections */
-        .container {
-            padding: 4rem 10%;
-            max-width: 1100px;
-            margin: auto;
-        }
-
+        /* Container & Grid */
+        .container { padding: 4rem 10%; max-width: 1100px; margin: auto; }
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
             margin-top: 3rem;
         }
 
-        .card {
-            border: 1px solid var(--gold);
-            padding: 2rem;
-            background: var(--gray);
-        }
+        .card { border: 1px solid var(--gold); padding: 2rem; background: var(--gray); }
 
-        /* CSS Performance Chart */
-        .chart-container {
-            margin-top: 3rem;
-            background: var(--gray);
-            padding: 2rem;
-            border: 1px solid #333;
-            text-align: center;
+        /* Trust Bar */
+        .trust-bar {
+            background: var(--dark-gray);
+            padding: 2rem 10%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            opacity: 0.7;
+            border-bottom: 1px solid #222;
         }
+        .trust-item { color: var(--white); font-weight: bold; letter-spacing: 1px; font-size: 0.8rem; border: 1px solid #444; padding: 5px 15px; }
 
+        /* Performance Chart */
+        .chart-container { background: var(--gray); padding: 3rem; border: 1px solid #333; text-align: center; margin: 4rem 0; }
         .chart-bar-wrap {
             display: flex;
             align-items: flex-end;
             justify-content: space-around;
-            height: 200px;
+            height: 150px;
             border-bottom: 2px solid var(--gold);
             margin: 2rem 0;
         }
+        .bar { width: 12%; background: linear-gradient(to top, var(--gold), #f1c40f); transition: 1s; }
 
-        .bar {
-            width: 15%;
-            background: linear-gradient(to top, var(--gold), #f1c40f);
-            transition: height 1s;
+        /* Leadership Section */
+        .profile-img {
+            width: 160px;
+            height: 160px;
+            background: #222;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            border: 2px solid var(--gold);
+            background-image: url('https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=200'); /* Professional headshot placeholder */
+            background-size: cover;
         }
 
-        /* Contact Form */
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 2rem;
-        }
-
-        input, textarea {
-            padding: 1rem;
-            background: var(--gray);
-            border: 1px solid #444;
-            color: white;
-        }
-
-        input:focus, textarea:focus {
-            border-color: var(--gold);
-            outline: none;
-        }
+        /* Form */
+        form { display: flex; flex-direction: column; gap: 15px; }
+        input, textarea { padding: 1rem; background: var(--gray); border: 1px solid #444; color: white; }
+        input:focus { border-color: var(--gold); outline: none; }
 
         footer {
             text-align: center;
             padding: 4rem 10%;
-            border-top: 1px solid #333;
-            font-size: 0.8rem;
-            color: #777;
-        }
-
-        @media (max-width: 768px) {
-            .nav-links { display: none; } /* Simplified for this example */
+            background: #050505;
+            color: #666;
+            font-size: 0.75rem;
+            border-top: 1px solid #222;
         }
     </style>
 </head>
@@ -168,64 +155,70 @@
         <a href="#" class="logo">GOLD-LEAF</a>
         <div class="nav-links">
             <a href="#about">About</a>
-            <a href="#philosophy">Philosophy</a>
+            <a href="#leadership">Leadership</a>
             <a href="#performance">Performance</a>
             <a href="#contact">Contact</a>
         </div>
     </nav>
 
+    <div class="trust-bar">
+        <div class="trust-item">FINRA REGISTERED</div>
+        <div class="trust-item">SEC COMPLIANT</div>
+        <div class="trust-item">SIPC MEMBER</div>
+        <div class="trust-item">CFA INSTITUTE</div>
+    </div>
+
     <section class="hero">
         <h1>Gold-Leaf Investments</h1>
-        <p>Premium Wealth Management & Strategic Growth</p>
-        <a href="#contact" class="cta-button">Inquire Privately</a>
+        <p>Bespoke Wealth Management for Global Citizens</p>
+        <a href="#contact" class="cta-button">Request Private Briefing</a>
     </section>
 
-    <div class="container" id="about">
-        <h2>The Gold-Leaf Standard</h2>
-        <p>At Gold-Leaf Investments, we don't just manage assets; we cultivate legacies. Founded on the principles of integrity and analytical rigor, our firm provides a bespoke gateway to global markets. We specialize in identifying undervalued opportunities and transforming them into pillars of generational wealth.</p>
-        
-        <div class="grid" id="philosophy">
-            <div class="card">
-                <h3>Precision Research</h3>
-                <p>Every recommendation is backed by deep-tier data analysis and a commitment to understanding market volatility.</p>
+    <div class="container">
+        <section id="about">
+            <h2>The Gold-Leaf Standard</h2>
+            <p>At Gold-Leaf Investments, we don't just manage assets; we cultivate legacies. Our boutique approach ensures that every client receives a personalized strategy tailored to their unique financial goals.</p>
+        </section>
+
+        <section id="leadership" style="margin-top: 6rem; text-align: center;">
+            <h2>Executive Leadership</h2>
+            <div class="grid" style="grid-template-columns: 1fr;"> <div class="card" style="border: none; background: transparent;">
+                    <div class="profile-img"></div>
+                    <h3>Principal Director</h3>
+                    <p style="max-width: 600px; margin: auto;">Bringing over 15 years of market-cycle expertise, our leadership focuses on high-precision asset allocation and defensive growth strategies in volatile climates.</p>
+                </div>
             </div>
-            <div class="card">
-                <h3>Tailored Strategy</h3>
-                <p>We recognize that no two financial journeys are the same. Our portfolios are hand-crafted to align with your specific goals.</p>
-            </div>
-            <div class="card">
-                <h3>Unwavering Privacy</h3>
-                <p>We prioritize the confidentiality and security of our clients' financial footprints above all else.</p>
-            </div>
-        </div>
+        </section>
 
         <section id="performance" class="chart-container">
             <h2>Market Growth History</h2>
-            <p>A visualization of our strategic asset appreciation over the last 4 quarters.</p>
             <div class="chart-bar-wrap">
-                <div class="bar" style="height: 40%;"></div>
-                <div class="bar" style="height: 60%;"></div>
+                <div class="bar" style="height: 45%;"></div>
+                <div class="bar" style="height: 65%;"></div>
                 <div class="bar" style="height: 55%;"></div>
-                <div class="bar" style="height: 90%;"></div>
+                <div class="bar" style="height: 95%;"></div>
             </div>
-            <p><small>Q1 &nbsp;&nbsp;&nbsp;&nbsp; Q2 &nbsp;&nbsp;&nbsp;&nbsp; Q3 &nbsp;&nbsp;&nbsp;&nbsp; Q4</small></p>
+            <p><small>Q1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Q2 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Q3 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Q4 Performance</small></p>
         </section>
 
-        <section id="contact" style="margin-top: 5rem;">
-            <h2>Secure Consultation</h2>
-            <p>Connect with a senior advisor to discuss your portfolio.</p>
-            <form>
-                <input type="text" placeholder="Full Name" required>
-                <input type="email" placeholder="Email Address" required>
-                <textarea rows="5" placeholder="Briefly describe your investment goals"></textarea>
-                <button type="submit" class="cta-button" style="border:none; cursor:pointer;">Submit Request</button>
-            </form>
+        <section id="contact">
+            <div class="card">
+                <h2>Secure Consultation</h2>
+                <p>Private inquiries only. Please provide your contact details below.</p>
+                <form>
+                    <input type="text" placeholder="Full Name" required>
+                    <input type="email" placeholder="Professional Email" required>
+                    <textarea rows="4" placeholder="Investment goals or specific interests"></textarea>
+                    <button type="submit" class="cta-button">Submit Inquiry</button>
+                </form>
+            </div>
         </section>
     </div>
 
     <footer>
-        <p>&copy; 2026 Gold-Leaf Investments. All Rights Reserved. <br>
-        Disclosures: Investment involves risk. Past performance is not indicative of future results.</p>
+        <p><strong>IMPORTANT DISCLOSURES:</strong></p>
+        <p>Investment in securities involves significant risk of loss. Past performance is not a guarantee of future results. Gold-Leaf Investments is an independent advisory firm. The information on this website does not constitute an offer to sell or a solicitation of an offer to buy any security.</p>
+        <p>&copy; 2026 Gold-Leaf Investments. | <a href="#" style="color:#888;">Privacy Policy</a> | <a href="#" style="color:#888;">Terms of Service</a></p>
     </footer>
 
 </body>
