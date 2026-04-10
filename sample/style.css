@@ -126,3 +126,32 @@ footer {
     text-decoration: none;
     letter-spacing: 2px;
 }
+/* Updated styling to ensure images show up */
+.service-visual { 
+    flex: 1; 
+    height: 350px; /* Increased height for better visibility */
+    background: #111; /* Dark placeholder while loading */
+    border: 1px solid var(--gold);
+    overflow: hidden; /* Ensures image doesn't "leak" out */
+    position: relative;
+    display: block; /* Ensures it takes up space */
+}
+
+.service-visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* This makes the photo fill the box without stretching */
+    display: block;
+}
+
+/* The decorative gold border "behind" the image */
+.service-visual::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--gold);
+    top: 15px;
+    left: 15px;
+    z-index: -1;
+}
