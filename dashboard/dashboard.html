@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Enterprise Dashboard (Fixed)</title>
+<title>Stable Enterprise Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -52,22 +52,6 @@ button{
   cursor:pointer;
 }
 
-/* CHIPS */
-.chips{
-  display:flex;
-  gap:8px;
-  padding:10px 15px;
-  flex-wrap:wrap;
-}
-
-.chip{
-  background:var(--card);
-  padding:6px 10px;
-  border-radius:20px;
-  font-size:12px;
-  cursor:pointer;
-}
-
 /* KPI */
 .kpis{
   display:grid;
@@ -93,19 +77,10 @@ button{
   margin:8px 0 0;
 }
 
-/* INSIGHT */
-.insight{
-  margin:0 15px 15px;
-  padding:12px;
-  background:var(--card);
-  border-radius:12px;
-  color:var(--muted);
-}
-
-/* GRID FIX */
+/* GRID */
 .grid{
   display:grid;
-  grid-template-columns:repeat(2, minmax(0, 1fr));
+  grid-template-columns:repeat(2,1fr);
   gap:15px;
   padding:15px;
 }
@@ -139,7 +114,6 @@ td,th{
 
 th{
   color:var(--muted);
-  cursor:pointer;
 }
 </style>
 </head>
@@ -147,16 +121,13 @@ th{
 <body>
 
 <div class="header">
-  <div><b>Enterprise Dashboard</b></div>
+  <div><b>Analytics Dashboard</b></div>
 
   <div class="actions">
     <input type="file" id="file">
-    <button onclick="exportCSV()">Export CSV</button>
     <button onclick="toggleTheme()">🌙 Theme</button>
   </div>
 </div>
-
-<div class="chips" id="chips"></div>
 
 <div class="kpis">
   <div class="kpi"><h4>Revenue</h4><p id="rev">$0</p></div>
@@ -164,8 +135,6 @@ th{
   <div class="kpi"><h4>Top Product</h4><p id="top">-</p></div>
   <div class="kpi"><h4>Avg Order</h4><p id="avg">$0</p></div>
 </div>
-
-<div class="insight" id="insight">Upload Excel file to begin...</div>
 
 <div class="grid">
   <div class="box"><canvas id="c1"></canvas></div>
@@ -177,7 +146,10 @@ th{
 <table>
 <thead>
 <tr>
-<th>Date</th><th>Product</th><th>Region</th><th>Revenue</th>
+<th>Date</th>
+<th>Product</th>
+<th>Region</th>
+<th>Revenue</th>
 </tr>
 </thead>
 <tbody id="table"></tbody>
@@ -186,7 +158,6 @@ th{
 <script>
 
 let raw=[];
-let filters={product:null,region:null};
 let charts=[];
 
 /* THEME */
@@ -194,71 +165,70 @@ function toggleTheme(){
   document.body.classList.toggle("light");
 }
 
-/* FILE LOAD (FIXED HEADER NORMALIZATION) */
-document.getElementById('file').onchange=e=>{
-  let r=new FileReader();
+/* SAFE FILE LOADER (FIXED) */
+document.getElementById('file').addEventListener('change', function(e){
 
-  r.onload=ev=>{
-    let wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
-    let sh=wb.Sheets[wb.SheetNames[0]];
+  const file = e.target.files[0];
+  if(!file){
+    alert("No file selected");
+    return;
+  }
 
-    let json=XLSX.utils.sheet_to_json(sh,{defval:""});
+  const reader = new FileReader();
 
-    // 🔥 FIX: normalize keys (removes hidden spaces)
-    raw=json.map(row=>{
-      let clean={};
-      Object.keys(row).forEach(k=>{
-        clean[k.trim()]=row[k];
+  reader.onload = function(event){
+
+    try {
+
+      const workbook = XLSX.read(event.target.result, {
+        type: "binary",
+        cellDates: true
       });
-      return clean;
-    });
 
-    render();
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+
+      let json = XLSX.utils.sheet_to_json(sheet, {
+        defval: ""
+      });
+
+      // CLEAN HEADERS
+      raw = json.map(row => {
+        let clean = {};
+        Object.keys(row).forEach(k => {
+          clean[String(k).trim()] = row[k];
+        });
+        return clean;
+      });
+
+      if(!raw.length){
+        alert("No data found in Excel file");
+        return;
+      }
+
+      render();
+
+    } catch(err){
+      console.error(err);
+      alert("Failed to read Excel file. Check format.");
+    }
   };
 
-  r.readAsArrayBuffer(e.target.files[0]);
-};
+  reader.readAsBinaryString(file);
 
-/* FILTERS */
-function setFilter(type,value){
-  filters[type]=value;
-  render();
-}
-
-function clearFilter(type){
-  filters[type]=null;
-  render();
-}
-
-/* EXPORT */
-function exportCSV(){
-  let csv="Date,Product,Region,Revenue\n";
-  raw.forEach(r=>{
-    csv+=`${r.Date},${r.Product},${r.Region},${r.Revenue}\n`;
-  });
-  let blob=new Blob([csv],{type:"text/csv"});
-  let a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="export.csv";
-  a.click();
-}
+});
 
 /* MAIN RENDER */
 function render(){
 
-  let data=raw.filter(r=>{
-    return (!filters.product||r.Product===filters.product)&&
-           (!filters.region||r.Region===filters.region);
-  });
+  let rev=0;
+  let p={},r={},d={};
 
-  let rev=0,p={},r={},d={};
+  raw.forEach(x=>{
 
-  data.forEach(x=>{
-
-    // 🔥 SAFE ACCESS (prevents undefined)
     let product=(x.Product||"").trim();
     let region=(x.Region||"").trim();
-    let date=(x.Date||"").trim();
+    let date=(x.Date||"").toString().trim();
     let value=Number(x.Revenue)||0;
 
     if(!product||!region||!date) return;
@@ -272,41 +242,26 @@ function render(){
 
   let top=Object.keys(p).reduce((a,b)=>p[a]>p[b]?a:b,"-");
 
-  document.getElementById('rev').innerText="$"+rev.toLocaleString();
-  document.getElementById('ord').innerText=data.length;
-  document.getElementById('top').innerText=top;
-  document.getElementById('avg').innerText="$"+(rev/(data.length||1)).toFixed(2);
+  document.getElementById("rev").innerText="$"+rev.toLocaleString();
+  document.getElementById("ord").innerText=raw.length;
+  document.getElementById("top").innerText=top;
+  document.getElementById("avg").innerText="$"+(rev/(raw.length||1)).toFixed(2);
 
-  document.getElementById('insight').innerText=
-    `Insight: ${top} is top performer. Revenue: $${rev.toLocaleString()}`;
-
-  renderChips();
-  renderTable(data);
+  renderTable();
   renderCharts(p,r,d);
 }
 
-/* CHIPS */
-function renderChips(){
-  let c=document.getElementById('chips');
-  c.innerHTML="";
-
-  if(filters.product)
-    c.innerHTML+=`<div class="chip" onclick="clearFilter('product')">Product: ${filters.product} ✕</div>`;
-
-  if(filters.region)
-    c.innerHTML+=`<div class="chip" onclick="clearFilter('region')">Region: ${filters.region} ✕</div>`;
-}
-
 /* TABLE */
-function renderTable(data){
-  document.getElementById('table').innerHTML=
-    data.map(r=>`
+function renderTable(){
+  document.getElementById("table").innerHTML =
+    raw.map(r=>`
       <tr>
         <td>${r.Date}</td>
         <td>${r.Product}</td>
         <td>${r.Region}</td>
         <td>${r.Revenue}</td>
-      </tr>`).join('');
+      </tr>
+    `).join("");
 }
 
 /* CHARTS */
@@ -316,30 +271,37 @@ function renderCharts(p,r,d){
   charts=[];
 
   charts.push(new Chart(c1,{
-    type:'bar',
-    data:{labels:Object.keys(p),datasets:[{data:Object.values(p)}]},
-    options:{onClick:(e,i)=>{
-      if(i.length)setFilter('product',Object.keys(p)[i[0].index]);
-    }}
+    type:"bar",
+    data:{
+      labels:Object.keys(p),
+      datasets:[{data:Object.values(p)}]
+    }
   }));
 
   charts.push(new Chart(c2,{
-    type:'pie',
-    data:{labels:Object.keys(r),datasets:[{data:Object.values(r)}]},
-    options:{onClick:(e,i)=>{
-      if(i.length)setFilter('region',Object.keys(r)[i[0].index]);
-    }}
+    type:"pie",
+    data:{
+      labels:Object.keys(r),
+      datasets:[{data:Object.values(r)}]
+    }
   }));
 
   charts.push(new Chart(c3,{
-    type:'line',
-    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]}
+    type:"line",
+    data:{
+      labels:Object.keys(d),
+      datasets:[{data:Object.values(d)}]
+    }
   }));
 
   charts.push(new Chart(c4,{
-    type:'bar',
-    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]}
+    type:"bar",
+    data:{
+      labels:Object.keys(d),
+      datasets:[{data:Object.values(d)}]
+    }
   }));
+
 }
 
 </script>
