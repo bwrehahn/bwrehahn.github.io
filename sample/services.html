@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Services | Gold-Leaf Investments</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Specific styling for the services page */
+        .service-feature {
+            display: flex;
+            align-items: center;
+            gap: 50px;
+            margin-bottom: 6rem;
+        }
+        
+        .service-feature:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .service-text { flex: 1; }
+        .service-visual { 
+            flex: 1; 
+            height: 300px; 
+            background: var(--gray); 
+            border: 1px solid var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .service-visual::after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 1px solid var(--gold);
+            top: 15px;
+            left: 15px;
+            z-index: -1;
+        }
+
+        .pillar-tag {
+            color: var(--gold);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo-container">
+            <div class="leaf-icon"></div>
+            <a href="index.html" class="logo-text">GOLD-LEAF</a>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="services.html" style="color: var(--gold);">Services</a>
+            <a href="leadership.html">Leadership</a>
+            <a href="contact.html">Inquiry</a>
+        </div>
+    </nav>
+
+    <header class="sub-hero">
+        <h1>Strategic Investment Pillars</h1>
+        <p>A disciplined approach to capital growth and heritage preservation.</p>
+    </header>
+
+    <div class="container">
+        <div class="service-feature">
+            <div class="service-text">
+                <span class="pillar-tag">Pillar I</span>
+                <h2>Wealth Preservation</h2>
+                <p>For established portfolios, our primary objective is the mitigation of systemic risk. We utilize sophisticated hedging techniques and diverse asset classes to ensure your capital remains resilient across market cycles.</p>
+            </div>
+            <div class="service-visual">
+                <img src="https://images.unsplash.com/photo-1554224155-169641357599?q=80&w=500" alt="Wealth Preservation" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+        </div>
+
+        <div class="service-feature">
+            <div class="service-text">
+                <span class="pillar-tag">Pillar II</span>
+                <h2>Global Growth Strategies</h2>
+                <p>We provide exclusive access to emerging market opportunities and private equity ventures. By identifying high-alpha sectors before they reach the mainstream, we position our clients at the forefront of global expansion.</p>
+            </div>
+            <div class="service-visual">
+                <img src="https://images.unsplash.com/photo-1526303310218-7f4419ce2996?q=80&w=500" alt="Global Growth" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+        </div>
+
+        <div class="service-feature">
+            <div class="service-text">
+                <span class="pillar-tag">Pillar III</span>
+                <h2>Generational Planning</h2>
+                <p>Investing is not just about the present; it is about the legacy you leave behind. Our team works alongside legal experts to structure assets for tax-efficiency and seamless multi-generational transfer.</p>
+            </div>
+            <div class="service-visual">
+                <img src="https://images.unsplash.com/photo-1453723850824-2bad444fb7f0?q=80&w=500" alt="Generational Planning" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+        </div>
+    </div>
+
+    <section style="text-align: center; padding-bottom: 5rem;">
+        <h3>Ready to discuss a custom strategy?</h3>
+        <a href="contact.html" class="cta-button">Connect with an Advisor</a>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Gold-Leaf Investments. All Rights Reserved.</p>
+    </footer>
+
+</body>
+</html>
