@@ -7,7 +7,7 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Excel Reader -->
+  <!-- Excel reader -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
   <style>
@@ -54,49 +54,42 @@
       margin-top: 10px;
     }
 
-.charts {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
+    /* ===== GRID FIX ===== */
+    .charts {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 20px;
+    }
 
-/* normal charts */
-.chart-box {
-  background: white;
-  padding: 10px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-}
-
-/* make pie chart bigger and not squished */
-.chart-box canvas {
-  width: 100% !important;
-  height: 240px !important;
-}
-
-/* SPECIAL FIX for pie chart */
-#regionChart {
-  height: 300px !important;
-}
-
-@media (max-width: 1000px) {
-  .charts {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
+    .chart-box {
+      background: white;
+      padding: 10px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      height: 280px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
     canvas {
       width: 100% !important;
-      height: 240px !important;
+      height: 250px !important;
+    }
+
+    /* pie chart special handling */
+    #regionChart {
+      max-width: 260px !important;
+      max-height: 260px !important;
     }
 
     @media (max-width: 1000px) {
-      .charts {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
       .cards {
         grid-template-columns: 1fr;
+      }
+
+      .charts {
+        grid-template-columns: repeat(6, 1fr);
       }
     }
   </style>
@@ -127,19 +120,35 @@
   </div>
 </div>
 
+<!-- CHARTS -->
 <div class="charts">
-  <div class="chart-box"><canvas id="revenueChart"></canvas></div>
-  <div class="chart-box"><canvas id="productChart"></canvas></div>
 
-  <div class="chart-box" style="grid-column: span 2;">
+  <div class="chart-box" style="grid-column: span 4;">
+    <canvas id="revenueChart"></canvas>
+  </div>
+
+  <div class="chart-box" style="grid-column: span 4;">
+    <canvas id="productChart"></canvas>
+  </div>
+
+  <div class="chart-box" style="grid-column: span 4;">
+    <canvas id="ordersChart"></canvas>
+  </div>
+
+  <div class="chart-box" style="grid-column: span 6;">
+    <canvas id="avgChart"></canvas>
+  </div>
+
+  <div class="chart-box" style="grid-column: span 6;">
     <canvas id="regionChart"></canvas>
   </div>
 
-  <div class="chart-box"><canvas id="ordersChart"></canvas></div>
-  <div class="chart-box"><canvas id="avgChart"></canvas></div>
 </div>
 
 <script>
+Chart.defaults.responsive = true;
+Chart.defaults.maintainAspectRatio = false;
+
 document.getElementById('fileInput').addEventListener('change', handleFile);
 
 let charts = [];
@@ -162,6 +171,7 @@ function handleFile(e) {
 }
 
 function processData(data) {
+
   const revenueByDate = {};
   const revenueByProduct = {};
   const revenueByRegion = {};
@@ -197,7 +207,6 @@ function createCharts(dateData, productData, regionData, ordersByDate) {
   charts.forEach(c => c.destroy());
   charts = [];
 
-  // Revenue over time
   charts.push(new Chart(document.getElementById("revenueChart"), {
     type: 'line',
     data: {
@@ -210,7 +219,6 @@ function createCharts(dateData, productData, regionData, ordersByDate) {
     }
   }));
 
-  // Revenue by product
   charts.push(new Chart(document.getElementById("productChart"), {
     type: 'bar',
     data: {
@@ -223,20 +231,6 @@ function createCharts(dateData, productData, regionData, ordersByDate) {
     }
   }));
 
-  // Revenue by region
-  charts.push(new Chart(document.getElementById("regionChart"), {
-    type: 'pie',
-    data: {
-      labels: Object.keys(regionData),
-      datasets: [{
-        label: 'Revenue by Region',
-        data: Object.values(regionData),
-        borderWidth: 1
-      }]
-    }
-  }));
-
-  // Orders per day
   charts.push(new Chart(document.getElementById("ordersChart"), {
     type: 'bar',
     data: {
@@ -249,7 +243,6 @@ function createCharts(dateData, productData, regionData, ordersByDate) {
     }
   }));
 
-  // Average revenue per order
   const avg = Object.keys(dateData).map(date =>
     dateData[date] / (ordersByDate[date] || 1)
   );
@@ -262,6 +255,18 @@ function createCharts(dateData, productData, regionData, ordersByDate) {
         label: 'Avg Revenue per Order',
         data: avg,
         borderWidth: 2
+      }]
+    }
+  }));
+
+  charts.push(new Chart(document.getElementById("regionChart"), {
+    type: 'pie',
+    data: {
+      labels: Object.keys(regionData),
+      datasets: [{
+        label: 'Revenue by Region',
+        data: Object.values(regionData),
+        borderWidth: 1
       }]
     }
   }));
