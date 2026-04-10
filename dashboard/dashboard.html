@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Senior Analytics Dashboard</title>
+<title>Senior SaaS Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -11,24 +11,23 @@
 :root{
   --bg:#0b1220;
   --card:#111c33;
-  --muted:#94a3b8;
   --text:#e5e7eb;
-  --accent:#3b82f6;
+  --muted:#94a3b8;
 }
 
-*{box-sizing:border-box}
+/* LIGHT MODE */
+body.light{
+  --bg:#f4f6f8;
+  --card:#ffffff;
+  --text:#111;
+  --muted:#555;
+}
 
 body{
   margin:0;
   font-family:Arial;
   background:var(--bg);
   color:var(--text);
-  animation:fadeIn .6s ease;
-}
-
-@keyframes fadeIn{
-  from{opacity:0;transform:translateY(10px)}
-  to{opacity:1;transform:translateY(0)}
 }
 
 /* HEADER */
@@ -37,15 +36,7 @@ body{
   justify-content:space-between;
   padding:15px;
   border-bottom:1px solid #1f2a44;
-  position:sticky;
-  top:0;
-  background:var(--bg);
-  z-index:10;
-}
-
-.title{
-  font-size:18px;
-  font-weight:bold;
+  align-items:center;
 }
 
 .actions{
@@ -55,17 +46,15 @@ body{
 
 button{
   background:var(--card);
-  border:none;
   color:var(--text);
+  border:none;
   padding:6px 10px;
   border-radius:8px;
   cursor:pointer;
 }
 
 button:hover{
-  transform:translateY(-2px);
-  transition:.2s;
-  background:#1a2a4a;
+  opacity:.85;
 }
 
 /* CHIPS */
@@ -96,11 +85,6 @@ button:hover{
   background:var(--card);
   padding:15px;
   border-radius:12px;
-  transition:.2s;
-}
-
-.kpi:hover{
-  transform:translateY(-3px);
 }
 
 .kpi h4{
@@ -121,13 +105,12 @@ button:hover{
   background:var(--card);
   border-radius:12px;
   color:var(--muted);
-  animation:fadeIn .4s ease;
 }
 
-/* CHARTS */
+/* CHART GRID (FIXED) */
 .grid{
   display:grid;
-  grid-template-columns:repeat(2,1fr);
+  grid-template-columns:repeat(2, minmax(0, 1fr));
   gap:15px;
   padding:15px;
 }
@@ -135,18 +118,15 @@ button:hover{
 .box{
   background:var(--card);
   border-radius:12px;
-  padding:10px;
-  height:260px;
-  transition:.2s;
+  padding:12px;
+  height:320px;
+  position:relative;
 }
 
-.box:hover{
-  transform:scale(1.01);
-}
-
+/* FIX: prevents squished charts */
 canvas{
   width:100%!important;
-  height:220px!important;
+  height:100%!important;
 }
 
 /* TABLE */
@@ -168,28 +148,26 @@ th{
   color:var(--muted);
   cursor:pointer;
 }
-
-/* LOADING */
-.loading{
-  display:none;
-  padding:15px;
-  color:var(--muted);
-}
 </style>
 </head>
 
 <body>
 
+<!-- HEADER -->
 <div class="header">
-  <div class="title">Senior Analytics Dashboard</div>
+  <div><b>Senior Analytics Dashboard</b></div>
+
   <div class="actions">
     <input type="file" id="file">
     <button onclick="exportCSV()">Export CSV</button>
+    <button onclick="toggleTheme()">🌙 Theme</button>
   </div>
 </div>
 
+<!-- FILTER CHIPS -->
 <div class="chips" id="chips"></div>
 
+<!-- KPI -->
 <div class="kpis">
   <div class="kpi"><h4>Revenue</h4><p id="rev">$0</p></div>
   <div class="kpi"><h4>Orders</h4><p id="ord">0</p></div>
@@ -197,10 +175,10 @@ th{
   <div class="kpi"><h4>Avg Order</h4><p id="avg">$0</p></div>
 </div>
 
-<div class="insight" id="insight">Upload data to generate insights...</div>
+<!-- INSIGHT -->
+<div class="insight" id="insight">Upload file to begin analysis...</div>
 
-<div class="loading" id="loading">Processing data...</div>
-
+<!-- CHARTS -->
 <div class="grid">
   <div class="box"><canvas id="c1"></canvas></div>
   <div class="box"><canvas id="c2"></canvas></div>
@@ -208,6 +186,7 @@ th{
   <div class="box"><canvas id="c4"></canvas></div>
 </div>
 
+<!-- TABLE -->
 <table>
 <thead>
 <tr>
@@ -223,20 +202,24 @@ let raw=[];
 let filters={product:null,region:null};
 let charts=[];
 
-document.getElementById('file').onchange=e=>{
-  document.getElementById('loading').style.display="block";
+/* THEME TOGGLE */
+function toggleTheme(){
+  document.body.classList.toggle("light");
+}
 
+/* FILE LOAD */
+document.getElementById('file').onchange=e=>{
   let r=new FileReader();
   r.onload=ev=>{
     let wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
     let sh=wb.Sheets[wb.SheetNames[0]];
     raw=XLSX.utils.sheet_to_json(sh);
     render();
-    document.getElementById('loading').style.display="none";
   };
   r.readAsArrayBuffer(e.target.files[0]);
 };
 
+/* FILTER */
 function setFilter(type,value){
   filters[type]=value;
   render();
@@ -247,7 +230,7 @@ function clearFilter(type){
   render();
 }
 
-/* CSV EXPORT */
+/* EXPORT */
 function exportCSV(){
   let csv="Date,Product,Region,Revenue\n";
   raw.forEach(r=>{
@@ -256,7 +239,7 @@ function exportCSV(){
   let blob=new Blob([csv],{type:"text/csv"});
   let a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
-  a.download="filtered-data.csv";
+  a.download="data.csv";
   a.click();
 }
 
@@ -286,7 +269,7 @@ function render(){
   document.getElementById('avg').innerText="$"+(rev/(data.length||1)).toFixed(2);
 
   document.getElementById('insight').innerText=
-    `Insight: ${top} leads revenue. Total revenue is $${rev.toLocaleString()}.`;
+    `Insight: ${top} is leading revenue. Total revenue: $${rev.toLocaleString()}`;
 
   renderChips();
   renderTable(data);
@@ -317,7 +300,7 @@ function renderTable(data){
       </tr>`).join('');
 }
 
-/* CHARTS */
+/* CHARTS + DRILLDOWN */
 function renderCharts(p,r,d){
 
   charts.forEach(c=>c.destroy());
@@ -325,9 +308,10 @@ function renderCharts(p,r,d){
 
   charts.push(new Chart(c1,{
     type:'bar',
-    data:{labels:Object.keys(p),
-    datasets:[{data:Object.values(p)}]},
+    data:{labels:Object.keys(p),datasets:[{data:Object.values(p)}]},
     options:{
+      responsive:true,
+      maintainAspectRatio:false,
       onClick:(e,i)=>{
         if(i.length)setFilter('product',Object.keys(p)[i[0].index]);
       }
@@ -336,9 +320,10 @@ function renderCharts(p,r,d){
 
   charts.push(new Chart(c2,{
     type:'pie',
-    data:{labels:Object.keys(r),
-    datasets:[{data:Object.values(r)}]},
+    data:{labels:Object.keys(r),datasets:[{data:Object.values(r)}]},
     options:{
+      responsive:true,
+      maintainAspectRatio:false,
       onClick:(e,i)=>{
         if(i.length)setFilter('region',Object.keys(r)[i[0].index]);
       }
@@ -347,14 +332,14 @@ function renderCharts(p,r,d){
 
   charts.push(new Chart(c3,{
     type:'line',
-    data:{labels:Object.keys(d),
-    datasets:[{data:Object.values(d)}]}
+    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
+    options:{responsive:true,maintainAspectRatio:false}
   }));
 
   charts.push(new Chart(c4,{
     type:'bar',
-    data:{labels:Object.keys(d),
-    datasets:[{data:Object.values(d)}]}
+    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
+    options:{responsive:true,maintainAspectRatio:false}
   }));
 }
 
