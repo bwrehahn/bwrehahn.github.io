@@ -104,3 +104,25 @@ footer {
             background-image: url('https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=200'); /* Professional headshot placeholder */
             background-size: cover;
         }
+/* Custom CSS Logo */
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.leaf-icon {
+    width: 20px;
+    height: 20px;
+    background-color: var(--gold);
+    border-radius: 0 100% 0 100%; /* Creates a leaf shape */
+    transform: rotate(-15deg);
+}
+
+.logo-text {
+    color: var(--gold);
+    font-weight: bold;
+    font-size: 1.5rem;
+    text-decoration: none;
+    letter-spacing: 2px;
+}
