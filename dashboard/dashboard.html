@@ -224,25 +224,73 @@ function renderTable(){
 
 function renderCharts(p,r,d){
 
-  // ✅ ONLY CHANGE: remove bad labels here
-  p = removeBadKeys(p);
-  r = removeBadKeys(r);
-  d = removeBadKeys(d);
-
   charts.forEach(c=>c.destroy());
   charts=[];
 
+  // ✅ CLEAN PRODUCT DATA
+  let pEntries = Object.entries(p).filter(([k,v]) =>
+    k && k !== "undefined"
+  );
+
+  let pLabels = pEntries.map(e=>e[0]);
+  let pValues = pEntries.map(e=>e[1]);
+
+  // ✅ CLEAN REGION DATA
+  let rEntries = Object.entries(r).filter(([k,v]) =>
+    k && k !== "undefined"
+  );
+
+  let rLabels = rEntries.map(e=>e[0]);
+  let rValues = rEntries.map(e=>e[1]);
+
+  // ✅ CLEAN DATE DATA
+  let dEntries = Object.entries(d).filter(([k,v]) =>
+    k && k !== "undefined"
+  );
+
+  // SORT DATES PROPERLY
+  dEntries.sort((a,b)=>new Date(a[0]) - new Date(b[0]));
+
+  let dLabels = dEntries.map(e=>e[0]);
+  let dValues = dEntries.map(e=>e[1]);
+
+  // CHARTS
   charts.push(new Chart(c1,{
     type:'bar',
-    data:{labels:Object.keys(p),datasets:[{data:Object.values(p)}]},
+    data:{
+      labels:pLabels,
+      datasets:[{data:pValues}]
+    },
     options:{responsive:true,maintainAspectRatio:false}
   }));
 
   charts.push(new Chart(c2,{
     type:'pie',
-    data:{labels:Object.keys(r),datasets:[{data:Object.values(r)}]},
+    data:{
+      labels:rLabels,
+      datasets:[{data:rValues}]
+    },
     options:{responsive:true,maintainAspectRatio:false}
   }));
+
+  charts.push(new Chart(c3,{
+    type:'line',
+    data:{
+      labels:dLabels,
+      datasets:[{data:dValues}]
+    },
+    options:{responsive:true,maintainAspectRatio:false}
+  }));
+
+  charts.push(new Chart(c4,{
+    type:'bar',
+    data:{
+      labels:dLabels,
+      datasets:[{data:dValues}]
+    },
+    options:{responsive:true,maintainAspectRatio:false}
+  }));
+}
 
   const sortedDates = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
 
