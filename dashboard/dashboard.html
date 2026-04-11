@@ -39,7 +39,10 @@ body{
   align-items:center;
 }
 
-.actions{ display:flex; gap:10px; }
+.actions{
+  display:flex;
+  gap:10px;
+}
 
 button{
   background:var(--card);
@@ -50,6 +53,11 @@ button{
   cursor:pointer;
 }
 
+button:hover{
+  opacity:.85;
+}
+
+/* KPI */
 .kpis{
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -61,6 +69,12 @@ button{
   background:var(--card);
   padding:10px;
   border-radius:10px;
+  font-size:14px;
+}
+
+.kpi span{
+  font-weight:bold;
+  margin-left:6px;
 }
 
 .grid{
@@ -87,14 +101,23 @@ table{
   margin:15px;
   background:var(--card);
   border-collapse:collapse;
+  border-radius:12px;
+  overflow:hidden;
 }
 
-th,td{
+th{
+  text-align:left;
   padding:10px;
+  color:var(--muted);
+  font-weight:600;
+}
+
+td{
+  text-align:left;
+  padding:10px;
+  opacity:0.9;
   border-bottom:1px solid #1f2a44;
 }
-
-th{ color:var(--muted); }
 </style>
 </head>
 
@@ -102,6 +125,7 @@ th{ color:var(--muted); }
 
 <div class="header">
   <b>Senior SaaS Dashboard</b>
+
   <div class="actions">
     <input type="file" id="file">
     <button onclick="toggleTheme()">🌙 Theme</button>
@@ -136,26 +160,49 @@ th{ color:var(--muted); }
 
 let raw=[];
 let charts=[];
-let drillState=null;
 
-/* ================= KPI HELPERS ================= */
+function toggleTheme(){
+  document.body.classList.toggle("light");
+}
 
-const money = v => "$" + Number(v).toLocaleString();
+/* DATE PARSE */
+function parseExcelDate(v){
 
-/* ================= LOAD ================= */
+  if(v === null || v === undefined) return "";
 
-document.getElementById('file').onchange = e=>{
-  const reader = new FileReader();
+  if(typeof v === "number"){
+    const d = XLSX.SSF.parse_date_code(v);
+    if(!d) return "";
+    return `${String(d.m).padStart(2,'0')}/${String(d.d).padStart(2,'0')}/${d.y}`;
+  }
 
-  reader.onload = ev=>{
-    const wb = XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
-    const sh = wb.Sheets[wb.SheetNames[0]];
+  let s = String(v).trim();
+  if(!s || s.toLowerCase()==="undefined") return "";
 
-    raw = XLSX.utils.sheet_to_json(sh,{defval:""}).map(r=>({
-      Date:r.Date,
-      Product:r.Product,
-      Region:r.Region,
-      Revenue:Number(r.Revenue)||0
+  const d = new Date(s);
+  if(!isNaN(d.getTime())){
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    const yyyy = d.getFullYear();
+    return `${mm}/${dd}/${yyyy}`;
+  }
+
+  return s;
+}
+
+/* LOAD */
+document.getElementById('file').onchange=e=>{
+  const reader=new FileReader();
+
+  reader.onload=ev=>{
+    const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+    const sh=wb.Sheets[wb.SheetNames[0]];
+
+    raw=XLSX.utils.sheet_to_json(sh,{defval:""}).map(r=>({
+      Date: parseExcelDate(r.Date),
+      Product: r.Product,
+      Region: r.Region,
+      Revenue: Number(r.Revenue)||0
     }));
 
     render();
@@ -164,11 +211,54 @@ document.getElementById('file').onchange = e=>{
   reader.readAsArrayBuffer(e.target.files[0]);
 };
 
-/* ================= RENDER TABLE ================= */
+function render(){
 
-function renderTable(data=raw){
-  document.getElementById("table").innerHTML =
-    data.map(r=>`
+  let p={},r={},d={};
+  let totalRevenue=0;
+
+  raw.forEach(x=>{
+    let v=x.Revenue||0;
+    totalRevenue+=v;
+
+    p[x.Product]=(p[x.Product]||0)+v;
+    r[x.Region]=(r[x.Region]||0)+v;
+    d[x.Date]=(d[x.Date]||0)+v;
+  });
+
+  const dates = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
+  const values = dates.map(k=>d[k]);
+
+  let pct = 0;
+  let arrow = "—";
+  let color = "var(--muted)";
+
+  if(values.length > 1){
+    const prev = values[values.length-2];
+    const curr = values[values.length-1];
+
+    if(prev !== 0){
+      pct = ((curr - prev) / prev) * 100;
+      arrow = pct >= 0 ? "▲" : "▼";
+      color = pct >= 0 ? "var(--green)" : "var(--red)";
+    }
+  }
+
+  document.getElementById("kpiRevenue").innerText = "$" + totalRevenue.toLocaleString();
+  document.getElementById("kpiOrders").innerText = raw.length;
+  document.getElementById("kpiAvg").innerText = "$" + (totalRevenue/(raw.length||1)).toFixed(2);
+
+  document.getElementById("kpiTrend").innerHTML =
+    `<span style="color:${color}">
+      ${arrow} ${pct.toFixed(2)}%
+    </span>`;
+
+  renderTable();
+  renderCharts(p,r,d);
+}
+
+function renderTable(){
+  document.getElementById('table').innerHTML =
+    raw.map(r=>`
       <tr>
         <td>${r.Date}</td>
         <td>${r.Product}</td>
@@ -178,154 +268,68 @@ function renderTable(data=raw){
     `).join('');
 }
 
-/* ================= DRILL ================= */
-
-function drill(field,value){
-
-  if(drillState?.field===field && drillState?.value===value){
-    drillState=null;
-    renderTable(raw);
-    render();
-    return;
-  }
-
-  drillState={field,value};
-  const filtered = raw.filter(r=>r[field]===value);
-  renderTable(filtered);
-}
-
-/* ================= KPI ================= */
-
-function renderKPIs(){
-
-  let total=0,p={},r={},d={};
-
-  raw.forEach(x=>{
-    total+=x.Revenue||0;
-    p[x.Product]=(p[x.Product]||0)+x.Revenue;
-    r[x.Region]=(r[x.Region]||0)+x.Revenue;
-    d[x.Date]=(d[x.Date]||0)+x.Revenue;
-  });
-
-  const dates=Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
-  const values=dates.map(k=>d[k]);
-
-  let pct=0,arrow="—",color="var(--muted)";
-
-  if(values.length>1){
-    const prev=values.at(-2);
-    const curr=values.at(-1);
-
-    if(prev){
-      pct=((curr-prev)/prev)*100;
-      arrow=pct>=0?"▲":"▼";
-      color=pct>=0?"var(--green)":"var(--red)";
-    }
-  }
-
-  document.getElementById("kpiRevenue").innerText=money(total);
-  document.getElementById("kpiOrders").innerText=raw.length;
-  document.getElementById("kpiAvg").innerText=money(total/(raw.length||1));
-
-  document.getElementById("kpiTrend").innerHTML =
-    `<span style="color:${color}">${arrow} ${pct.toFixed(2)}%</span>`;
-}
-
-/* ================= CHART INTERACTION CORE ================= */
-
-function baseOptions(title, field, labels){
-
-  return {
-    responsive:true,
-    maintainAspectRatio:false,
-
-    animation:{
-      duration:900,
-      easing:"easeOutQuart"
-    },
-
-    plugins:{
-      title:{display:true,text:title},
-      legend:{
-        onClick:(e,legendItem,legend)=>{
-          const index = legendItem.datasetIndex;
-          const ci = legend.chart;
-
-          ci.getDatasetMeta(index).hidden =
-            !ci.getDatasetMeta(index).hidden;
-
-          ci.update();
-        }
-      },
-      tooltip:{
-        callbacks:{
-          label:(ctx)=>money(ctx.raw)
-        }
-      }
-    },
-
-    onClick:(evt,elements)=>{
-      if(!elements.length) return;
-      const i = elements[0].index;
-      drill(field, labels[i]);
-    }
-  };
-}
-
-/* ================= CHARTS ================= */
-
-function renderCharts(){
+function renderCharts(p,r,d){
 
   charts.forEach(c=>c.destroy());
   charts=[];
 
-  let p={},r={},d={};
+  const pLabels = Object.keys(p);
+  const pValues = Object.values(p);
 
-  raw.forEach(x=>{
-    p[x.Product]=(p[x.Product]||0)+x.Revenue;
-    r[x.Region]=(r[x.Region]||0)+x.Revenue;
-    d[x.Date]=(d[x.Date]||0)+x.Revenue;
-  });
+  const rLabels = Object.keys(r);
+  const rValues = Object.values(r);
 
-  const pL=Object.keys(p), pV=Object.values(p);
-  const rL=Object.keys(r), rV=Object.values(r);
-  const dL=Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
-  const dV=dL.map(k=>d[k]);
+  const dLabels = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
+  const dValues = dLabels.map(k=>d[k]);
 
   charts.push(new Chart(c1,{
-    type:"bar",
-    data:{labels:pL,datasets:[{label:"Revenue",data:pV}]},
-    options:baseOptions("Revenue by Product","Product",pL)
+    type:'bar',
+    data:{labels:pLabels,datasets:[{label:"Revenue",data:pValues}]},
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        title:{display:true,text:"Revenue by Product"}
+      }
+    }
   }));
 
   charts.push(new Chart(c2,{
-    type:"pie",
-    data:{labels:rL,datasets:[{label:"Revenue",data:rV}]},
-    options:baseOptions("Revenue by Region","Region",rL)
+    type:'pie',
+    data:{labels:rLabels,datasets:[{label:"Revenue",data:rValues}]},
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        title:{display:true,text:"Revenue by Region"}
+      }
+    }
   }));
 
   charts.push(new Chart(c3,{
-    type:"line",
-    data:{labels:dL,datasets:[{label:"Revenue",data:dV}]},
-    options:baseOptions("Revenue Over Time","Date",dL)
+    type:'line',
+    data:{labels:dLabels,datasets:[{label:"Revenue",data:dValues}]},
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        title:{display:true,text:"Revenue Over Time"}
+      }
+    }
   }));
 
   charts.push(new Chart(c4,{
-    type:"bar",
-    data:{labels:dL,datasets:[{label:"Revenue",data:dV}]},
-    options:baseOptions("Daily Revenue","Date",dL)
+    type:'bar',
+    data:{labels:dLabels,datasets:[{label:"Revenue",data:dValues}]},
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        title:{display:true,text:"Daily Revenue"}
+      }
+    }
   }));
 }
-
-/* ================= MAIN ================= */
-
-function render(){
-  renderKPIs();
-  renderCharts();
-  renderTable();
-}
-
-/* ================= EXPORT ================= */
 
 function exportCSV(){
   let csv="Date,Product,Region,Revenue\n";
@@ -338,12 +342,6 @@ function exportCSV(){
   a.href=URL.createObjectURL(blob);
   a.download="data.csv";
   a.click();
-}
-
-/* ================= THEME ================= */
-
-function toggleTheme(){
-  document.body.classList.toggle("light");
 }
 
 </script>
