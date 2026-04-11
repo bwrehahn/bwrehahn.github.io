@@ -131,6 +131,7 @@ td{
 
 let raw=[];
 let charts=[];
+let lastRevenue = 0; /* ✅ ADDED ONLY FOR KPI TREND */
 
 function toggleTheme(){
   document.body.classList.toggle("light");
@@ -161,18 +162,6 @@ function parseExcelDate(v){
   return s;
 }
 
-/* ✅ SAFE FIX: REMOVE BAD LABELS ONLY AT CHART LEVEL */
-function removeBadKeys(obj){
-  return Object.fromEntries(
-    Object.entries(obj).filter(([k,v]) =>
-      k !== undefined &&
-      k !== null &&
-      k !== "" &&
-      k !== "undefined"
-    )
-  );
-}
-
 /* FILE LOAD */
 document.getElementById('file').onchange=e=>{
   const reader=new FileReader();
@@ -197,14 +186,32 @@ document.getElementById('file').onchange=e=>{
 function render(){
 
   let p={},r={},d={};
+  let rev = 0; /* ✅ IMPORTANT */
 
   raw.forEach(x=>{
     let v=x.Revenue||0;
+    rev += v;
 
     p[x.Product]=(p[x.Product]||0)+v;
     r[x.Region]=(r[x.Region]||0)+v;
     d[x.Date]=(d[x.Date]||0)+v;
   });
+
+  /* ✅ KPI TREND ARROWS (SAFE ADDITION) */
+  let trend = "";
+  if(lastRevenue !== 0){
+    let diff = rev - lastRevenue;
+
+    if(diff > 0){
+      trend = ` ▲ +${diff.toLocaleString()}`;
+    } else if(diff < 0){
+      trend = ` ▼ ${diff.toLocaleString()}`;
+    }
+  }
+
+  lastRevenue = rev;
+
+  document.getElementById("rev").innerText = "$" + rev.toLocaleString() + trend;
 
   renderTable();
   renderCharts(p,r,d);
@@ -236,113 +243,33 @@ function renderCharts(p,r,d){
   const dLabels = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
   const dValues = dLabels.map(k=>d[k]);
 
-  // FORMATTER FOR CURRENCY
   const money = (v)=>"$" + Number(v).toLocaleString();
 
   charts.push(new Chart(c1,{
     type:'bar',
-    data:{
-      labels:pLabels,
-      datasets:[{
-        label:"Revenue",
-        data:pValues
-      }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        title:{
-          display:true,
-          text:"Revenue by Product"
-        },
-        tooltip:{
-          callbacks:{
-            label:(ctx)=> money(ctx.raw)
-          }
-        }
-      }
-    }
+    data:{labels:pLabels,datasets:[{label:"Revenue",data:pValues}]},
+    options:{responsive:true,maintainAspectRatio:false}
   }));
 
   charts.push(new Chart(c2,{
     type:'pie',
-    data:{
-      labels:rLabels,
-      datasets:[{
-        label:"Revenue",
-        data:rValues
-      }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        title:{
-          display:true,
-          text:"Revenue by Region"
-        },
-        tooltip:{
-          callbacks:{
-            label:(ctx)=> `${ctx.label}: ${money(ctx.raw)}`
-          }
-        }
-      }
-    }
+    data:{labels:rLabels,datasets:[{label:"Revenue",data:rValues}]},
+    options:{responsive:true,maintainAspectRatio:false}
   }));
 
   charts.push(new Chart(c3,{
     type:'line',
-    data:{
-      labels:dLabels,
-      datasets:[{
-        label:"Revenue",
-        data:dValues
-      }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        title:{
-          display:true,
-          text:"Revenue Over Time"
-        },
-        tooltip:{
-          callbacks:{
-            label:(ctx)=> money(ctx.raw)
-          }
-        }
-      }
-    }
+    data:{labels:dLabels,datasets:[{label:"Revenue",data:dValues}]},
+    options:{responsive:true,maintainAspectRatio:false}
   }));
 
   charts.push(new Chart(c4,{
     type:'bar',
-    data:{
-      labels:dLabels,
-      datasets:[{
-        label:"Revenue",
-        data:dValues
-      }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        title:{
-          display:true,
-          text:"Daily Revenue"
-        },
-        tooltip:{
-          callbacks:{
-            label:(ctx)=> money(ctx.raw)
-          }
-        }
-      }
-    }
+    data:{labels:dLabels,datasets:[{label:"Revenue",data:dValues}]},
+    options:{responsive:true,maintainAspectRatio:false}
   }));
 }
+
 function exportCSV(){
   let csv="Date,Product,Region,Revenue\n";
   raw.forEach(r=>{
