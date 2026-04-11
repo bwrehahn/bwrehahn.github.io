@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Senior SaaS Dashboard (Fixed)</title>
+<title>Senior SaaS Dashboard (Stable)</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -37,7 +37,10 @@ body{
   align-items:center;
 }
 
-.actions{display:flex;gap:10px;}
+.actions{
+  display:flex;
+  gap:10px;
+}
 
 button{
   background:var(--card);
@@ -76,8 +79,16 @@ button{
   border-radius:12px;
 }
 
-.kpi h4{margin:0;font-size:12px;color:var(--muted);}
-.kpi p{margin:8px 0 0;font-size:20px;}
+.kpi h4{
+  margin:0;
+  font-size:12px;
+  color:var(--muted);
+}
+
+.kpi p{
+  margin:8px 0 0;
+  font-size:20px;
+}
 
 .insight{
   margin:0 15px 15px;
@@ -154,7 +165,9 @@ th{color:var(--muted);}
 
 <table>
 <thead>
-<tr><th>Date</th><th>Product</th><th>Region</th><th>Revenue</th></tr>
+<tr>
+<th>Date</th><th>Product</th><th>Region</th><th>Revenue</th>
+</tr>
 </thead>
 <tbody id="table"></tbody>
 </table>
@@ -165,12 +178,19 @@ let raw=[];
 let filters={product:null,region:null};
 let charts=[];
 
+/* SAFE RENDER HELPER (fixes "undefined") */
+function safe(v){
+  return (v === undefined || v === null || v === "" || v === "undefined")
+    ? ""
+    : v;
+}
+
 /* THEME */
 function toggleTheme(){
   document.body.classList.toggle("light");
 }
 
-/* FIX: Excel date conversion */
+/* DATE FIX */
 function fixDate(v){
   if(typeof v === "number"){
     const d = XLSX.SSF.parse_date_code(v);
@@ -194,7 +214,6 @@ document.getElementById("file").onchange=e=>{
     });
 
     raw=json.map(r=>{
-
       let clean={Product:"",Region:"",Date:"",Revenue:0};
 
       Object.keys(r).forEach(k=>{
@@ -226,7 +245,7 @@ function clearFilter(type){
   render();
 }
 
-/* SAFE GROUP (NO undefined EVER) */
+/* GROUP SAFE */
 function group(data,key){
   let map=new Map();
 
@@ -266,38 +285,25 @@ function render(){
 
   document.getElementById("rev").innerText="$"+rev.toLocaleString();
   document.getElementById("ord").innerText=data.length;
-  document.getElementById("top").innerText=top;
+  document.getElementById("top").innerText=safe(top);
   document.getElementById("avg").innerText="$"+(rev/(data.length||1)).toFixed(2);
 
   document.getElementById("insight").innerText=
-    `Insight: ${top} leads revenue with $${rev.toLocaleString()}`;
+    `Insight: ${safe(top)} leads revenue with $${rev.toLocaleString()}`;
 
   renderTable(data);
-  renderChips();
   renderCharts(p,r,d);
 }
 
-/* CHIPS */
-function renderChips(){
-  let c=document.getElementById("chips");
-  c.innerHTML="";
-
-  if(filters.product)
-    c.innerHTML+=`<div class="chip" onclick="clearFilter('product')">Product: ${filters.product} ✕</div>`;
-
-  if(filters.region)
-    c.innerHTML+=`<div class="chip" onclick="clearFilter('region')">Region: ${filters.region} ✕</div>`;
-}
-
-/* TABLE */
+/* TABLE (FIXED undefined) */
 function renderTable(data){
   document.getElementById("table").innerHTML=
     data.map(r=>`
       <tr>
-        <td>${r.Date}</td>
-        <td>${r.Product}</td>
-        <td>${r.Region}</td>
-        <td>${r.Revenue}</td>
+        <td>${safe(r.Date)}</td>
+        <td>${safe(r.Product)}</td>
+        <td>${safe(r.Region)}</td>
+        <td>${safe(r.Revenue)}</td>
       </tr>
     `).join("");
 }
@@ -308,9 +314,9 @@ function renderCharts(p,r,d){
   charts.forEach(c=>c.destroy());
   charts=[];
 
-  const prod=group(dataFor(p));
-  const reg=group(dataFor(r));
-  const dat=group(dataFor(d));
+  const prod = group(p);
+  const reg = group(r);
+  const dat = group(d);
 
   charts.push(new Chart(c1,{
     type:"bar",
@@ -335,13 +341,6 @@ function renderCharts(p,r,d){
     data:{labels:dat.labels,datasets:[{data:dat.values}]},
     options:{responsive:true,maintainAspectRatio:false}
   }));
-}
-
-/* SAFE TRANSFORM */
-function dataFor(obj){
-  return Object.entries(obj)
-    .filter(([k,v])=>k && k!=="undefined")
-    .map(([k,v])=>({k,v}));
 }
 
 </script>
