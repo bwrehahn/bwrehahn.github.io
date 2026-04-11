@@ -74,7 +74,6 @@ canvas{
   height:100%!important;
 }
 
-/* ✅ TABLE FIX */
 table{
   width:calc(100% - 30px);
   margin:15px;
@@ -107,7 +106,10 @@ td{
 
   <div class="actions">
     <input type="file" id="file">
-    <button onclick="toggleTheme()">Theme</button>
+
+    <!-- ✅ FIXED ICON HERE -->
+    <button onclick="toggleTheme()">🌙 Theme</button>
+
     <button onclick="exportCSV()">Export CSV</button>
   </div>
 </div>
@@ -138,7 +140,7 @@ function toggleTheme(){
   document.body.classList.toggle("light");
 }
 
-/* ✅ DATE FORMAT FIX (mm/dd/yyyy) */
+/* DATE PARSE (kept from your working version) */
 function parseExcelDate(v){
 
   if(v === null || v === undefined) return "";
@@ -184,7 +186,6 @@ document.getElementById('file').onchange=e=>{
   reader.readAsArrayBuffer(e.target.files[0]);
 };
 
-/* RENDER */
 function render(){
 
   let p={},r={},d={};
@@ -201,7 +202,6 @@ function render(){
   renderCharts(p,r,d);
 }
 
-/* TABLE */
 function renderTable(){
   document.getElementById('table').innerHTML =
     raw.map(r=>`
@@ -214,7 +214,6 @@ function renderTable(){
     `).join('');
 }
 
-/* CHARTS */
 function renderCharts(p,r,d){
 
   charts.forEach(c=>c.destroy());
