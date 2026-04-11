@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Stable Dashboard FIXED</title>
+<title>Clean Stable Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -18,30 +18,9 @@ body{
 .header{
   padding:15px;
   border-bottom:1px solid #1f2a44;
-}
-
-/* FIXED GRID (no flex conflicts) */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(2, 1fr);
-  gap:15px;
-  padding:15px;
-}
-
-/* FIXED HEIGHT (THIS IS THE KEY) */
-.card{
-  background:#111c33;
-  border-radius:12px;
-  padding:10px;
-  height:320px;
-  position:relative;
-}
-
-/* HARD FIX FOR CHART SIZE */
-canvas{
-  width:100% !important;
-  height:300px !important;
-  display:block;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 
 .kpis{
@@ -56,21 +35,41 @@ canvas{
   padding:12px;
   border-radius:10px;
 }
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+  padding:15px;
+}
+
+.card{
+  background:#111c33;
+  border-radius:12px;
+  padding:10px;
+  height:320px;
+}
+
+/* FIXED CHART SIZE */
+canvas{
+  width:100% !important;
+  height:300px !important;
+}
 </style>
 </head>
 
 <body>
 
 <div class="header">
-  <b>FIXED DASHBOARD (No Undefined + No Squish)</b>
+  <b>Stable Excel Dashboard (FINAL)</b>
   <input type="file" id="file">
 </div>
 
 <div class="kpis">
   <div class="kpi"><div>Revenue</div><div id="rev">$0</div></div>
   <div class="kpi"><div>Orders</div><div id="ord">0</div></div>
-  <div class="kpi"><div>Top</div><div id="top">-</div></div>
-  <div class="kpi"><div>Avg</div><div id="avg">$0</div></div>
+  <div class="kpi"><div>Top Product</div><div id="top">-</div></div>
+  <div class="kpi"><div>Avg Order</div><div id="avg">$0</div></div>
 </div>
 
 <div class="grid">
@@ -85,24 +84,8 @@ canvas{
 let raw=[];
 let charts=[];
 
-/* SAFE EXCEL PARSER */
-function cleanRow(row){
-  let out={Product:"",Region:"",Date:"",Revenue:0};
-
-  Object.keys(row).forEach(k=>{
-    let key=k.toLowerCase().replace(/\s/g,"");
-
-    if(key.includes("product")) out.Product=row[k];
-    if(key.includes("region")) out.Region=row[k];
-    if(key.includes("date")) out.Date=row[k];
-    if(key.includes("revenue")) out.Revenue=row[k];
-  });
-
-  return out;
-}
-
-/* FILE LOAD */
-document.getElementById("file").addEventListener("change",e=>{
+/* LOAD EXCEL (POSITION-BASED PARSER = BULLETPROOF) */
+document.getElementById("file").addEventListener("change", e=>{
   let file=e.target.files[0];
   let reader=new FileReader();
 
@@ -110,9 +93,32 @@ document.getElementById("file").addEventListener("change",e=>{
     let wb=XLSX.read(ev.target.result,{type:"binary"});
     let sheet=wb.Sheets[wb.SheetNames[0]];
 
-    let json=XLSX.utils.sheet_to_json(sheet,{defval:""});
+    let json=XLSX.utils.sheet_to_json(sheet,{
+      header:1,
+      defval:""
+    });
 
-    raw=json.map(cleanRow).filter(r=>r.Product&&r.Region&&r.Date);
+    if(!json.length){
+      alert("Empty Excel file");
+      return;
+    }
+
+    let headers=json[0].map(h=>String(h).trim().toLowerCase());
+
+    raw=json.slice(1).map(row=>{
+      let obj={};
+
+      headers.forEach((h,i)=>{
+        obj[h]=row[i];
+      });
+
+      return {
+        Product: obj.product || "",
+        Region: obj.region || "",
+        Date: obj.date || "",
+        Revenue: Number(obj.revenue) || 0
+      };
+    }).filter(r=>r.Product && r.Region && r.Date);
 
     render();
   };
@@ -120,82 +126,77 @@ document.getElementById("file").addEventListener("change",e=>{
   reader.readAsBinaryString(file);
 });
 
-/* SAFE GROUPING (NO OBJECT KEYS USED IN CHARTS DIRECTLY) */
-function group(data,field){
+/* GROUP DATA SAFELY */
+function group(field){
   let map=new Map();
 
-  data.forEach(r=>{
+  raw.forEach(r=>{
     let key=r[field];
     if(!key || key==="undefined") return;
 
-    let val=Number(r.Revenue)||0;
-    map.set(key,(map.get(key)||0)+val);
+    map.set(key,(map.get(key)||0)+r.Revenue);
   });
 
   return {
-    labels:Array.from(map.keys()),
-    values:Array.from(map.values())
+    labels:[...map.keys()],
+    values:[...map.values()]
   };
 }
 
-/* MAIN RENDER */
+/* RENDER DASHBOARD */
 function render(){
 
   let total=0;
   let p={},r={},d={};
 
   raw.forEach(x=>{
-    let v=Number(x.Revenue)||0;
-    total+=v;
+    total+=x.Revenue;
 
-    p[x.Product]=(p[x.Product]||0)+v;
-    r[x.Region]=(r[x.Region]||0)+v;
-    d[x.Date]=(d[x.Date]||0)+v;
+    p[x.Product]=(p[x.Product]||0)+x.Revenue;
+    r[x.Region]=(r[x.Region]||0)+x.Revenue;
+    d[x.Date]=(d[x.Date]||0)+x.Revenue;
   });
 
-  document.getElementById("rev").innerText="$"+total;
-  document.getElementById("ord").innerText=raw.length;
-
   let top=Object.keys(p).reduce((a,b)=>p[a]>p[b]?a:b,"-");
+
+  document.getElementById("rev").innerText="$"+total.toLocaleString();
+  document.getElementById("ord").innerText=raw.length;
   document.getElementById("top").innerText=top;
   document.getElementById("avg").innerText="$"+(total/(raw.length||1)).toFixed(2);
 
   drawCharts();
 }
 
-/* FINAL SAFE CHARTS */
+/* CHARTS (CLEAN + STABLE) */
 function drawCharts(){
 
   charts.forEach(c=>c.destroy());
   charts=[];
 
-  let p=group(raw,"Product");
-  let r=group(raw,"Region");
-  let d=group(raw,"Date");
+  let p=group("Product");
+  let r=group("Region");
+  let d=group("Date");
 
   charts.push(new Chart(c1,{
     type:"bar",
-    data:{labels:p.labels,datasets:[{data:p.values}]},
-    options:{responsive:true}
+    data:{labels:p.labels,datasets:[{data:p.values}]}
   }));
 
   charts.push(new Chart(c2,{
     type:"pie",
-    data:{labels:r.labels,datasets:[{data:r.values}]},
-    options:{responsive:true}
+    data:{labels:r.labels,datasets:[{data:r.values}]}
   }));
 
   charts.push(new Chart(c3,{
     type:"line",
-    data:{labels:d.labels,datasets:[{data:d.values}]},
-    options:{responsive:true}
+    data:{labels:d.labels,datasets:[{data:d.values}]}
   }));
 
   charts.push(new Chart(c4,{
     type:"bar",
-    data:{labels:d.labels,datasets:[{data:d.values}]},
-    options:{responsive:true}
+    data:{labels:d.labels,datasets:[{data:d.values}]}
   }));
+
 }
 
 </script>
