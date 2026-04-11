@@ -55,6 +55,26 @@ button:hover{
   opacity:.85;
 }
 
+/* ✅ KPI STRIP (ADDED) */
+.kpis{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  padding:10px 15px 0;
+}
+
+.kpi{
+  background:var(--card);
+  padding:10px;
+  border-radius:10px;
+  font-size:14px;
+}
+
+.kpi span{
+  font-weight:bold;
+  margin-left:6px;
+}
+
 .grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -111,6 +131,14 @@ td{
   </div>
 </div>
 
+<!-- ✅ KPI ROW (ADDED) -->
+<div class="kpis">
+  <div class="kpi">Revenue <span id="kpiRevenue">-</span></div>
+  <div class="kpi">Orders <span id="kpiOrders">-</span></div>
+  <div class="kpi">Avg Order <span id="kpiAvg">-</span></div>
+  <div class="kpi">Trend <span id="kpiTrend">-</span></div>
+</div>
+
 <div class="grid">
   <div class="box"><canvas id="c1"></canvas></div>
   <div class="box"><canvas id="c2"></canvas></div>
@@ -161,18 +189,6 @@ function parseExcelDate(v){
   return s;
 }
 
-/* ✅ SAFE FIX: REMOVE BAD LABELS ONLY AT CHART LEVEL */
-function removeBadKeys(obj){
-  return Object.fromEntries(
-    Object.entries(obj).filter(([k,v]) =>
-      k !== undefined &&
-      k !== null &&
-      k !== "" &&
-      k !== "undefined"
-    )
-  );
-}
-
 /* FILE LOAD */
 document.getElementById('file').onchange=e=>{
   const reader=new FileReader();
@@ -198,13 +214,33 @@ function render(){
 
   let p={},r={},d={};
 
+  let totalRevenue = 0;
+
   raw.forEach(x=>{
     let v=x.Revenue||0;
+    totalRevenue += v;
 
     p[x.Product]=(p[x.Product]||0)+v;
     r[x.Region]=(r[x.Region]||0)+v;
     d[x.Date]=(d[x.Date]||0)+v;
   });
+
+  /* =========================
+     KPI CALC (ADDED)
+  ========================== */
+  const dates = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
+  const values = dates.map(k=>d[k]);
+
+  let trend = "—";
+  if(values.length > 1){
+    const diff = values[values.length-1] - values[values.length-2];
+    trend = diff >= 0 ? "▲" : "▼";
+  }
+
+  document.getElementById("kpiRevenue").innerText = "$" + totalRevenue.toLocaleString();
+  document.getElementById("kpiOrders").innerText = raw.length;
+  document.getElementById("kpiAvg").innerText = "$" + (totalRevenue / (raw.length||1)).toFixed(2);
+  document.getElementById("kpiTrend").innerText = trend;
 
   renderTable();
   renderCharts(p,r,d);
@@ -236,113 +272,33 @@ function renderCharts(p,r,d){
   const dLabels = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
   const dValues = dLabels.map(k=>d[k]);
 
-  // FORMATTER FOR CURRENCY
   const money = (v)=>"$" + Number(v).toLocaleString();
 
   charts.push(new Chart(c1,{
     type:'bar',
-    data:{
-      labels:pLabels,
-      datasets:[{
-        label:"Revenue",
-        data:pValues
-      }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        title:{
-          display:true,
-          text:"Revenue by Product"
-        },
-        tooltip:{
-          callbacks:{
-            label:(ctx)=> money(ctx.raw)
-          }
-        }
-      }
-    }
+    data:{ labels:pLabels, datasets:[{ label:"Revenue", data:pValues }]},
+    options:{ responsive:true, maintainAspectRatio:false }
   }));
 
   charts.push(new Chart(c2,{
     type:'pie',
-    data:{
-      labels:rLabels,
-      datasets:[{
-        label:"Revenue",
-        data:rValues
-      }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        title:{
-          display:true,
-          text:"Revenue by Region"
-        },
-        tooltip:{
-          callbacks:{
-            label:(ctx)=> `${ctx.label}: ${money(ctx.raw)}`
-          }
-        }
-      }
-    }
+    data:{ labels:rLabels, datasets:[{ label:"Revenue", data:rValues }]},
+    options:{ responsive:true, maintainAspectRatio:false }
   }));
 
   charts.push(new Chart(c3,{
     type:'line',
-    data:{
-      labels:dLabels,
-      datasets:[{
-        label:"Revenue",
-        data:dValues
-      }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        title:{
-          display:true,
-          text:"Revenue Over Time"
-        },
-        tooltip:{
-          callbacks:{
-            label:(ctx)=> money(ctx.raw)
-          }
-        }
-      }
-    }
+    data:{ labels:dLabels, datasets:[{ label:"Revenue", data:dValues }]},
+    options:{ responsive:true, maintainAspectRatio:false }
   }));
 
   charts.push(new Chart(c4,{
     type:'bar',
-    data:{
-      labels:dLabels,
-      datasets:[{
-        label:"Revenue",
-        data:dValues
-      }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        title:{
-          display:true,
-          text:"Daily Revenue"
-        },
-        tooltip:{
-          callbacks:{
-            label:(ctx)=> money(ctx.raw)
-          }
-        }
-      }
-    }
+    data:{ labels:dLabels, datasets:[{ label:"Revenue", data:dValues }]},
+    options:{ responsive:true, maintainAspectRatio:false }
   }));
 }
+
 function exportCSV(){
   let csv="Date,Product,Region,Revenue\n";
   raw.forEach(r=>{
