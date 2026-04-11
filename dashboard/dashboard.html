@@ -234,20 +234,34 @@ function renderCharts(p,r,d){
   const rValues = Object.values(r);
 
   const dLabels = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
-  const dValues = dLabels.map(k => d[k]);
+  const dValues = dLabels.map(k=>d[k]);
+
+  // FORMATTER FOR CURRENCY
+  const money = (v)=>"$" + Number(v).toLocaleString();
 
   charts.push(new Chart(c1,{
     type:'bar',
     data:{
       labels:pLabels,
       datasets:[{
-        label:"Revenue by Product",
+        label:"Revenue",
         data:pValues
       }]
     },
     options:{
       responsive:true,
-      maintainAspectRatio:false
+      maintainAspectRatio:false,
+      plugins:{
+        title:{
+          display:true,
+          text:"Revenue by Product"
+        },
+        tooltip:{
+          callbacks:{
+            label:(ctx)=> money(ctx.raw)
+          }
+        }
+      }
     }
   }));
 
@@ -256,13 +270,24 @@ function renderCharts(p,r,d){
     data:{
       labels:rLabels,
       datasets:[{
-        label:"Revenue by Region",
+        label:"Revenue",
         data:rValues
       }]
     },
     options:{
       responsive:true,
-      maintainAspectRatio:false
+      maintainAspectRatio:false,
+      plugins:{
+        title:{
+          display:true,
+          text:"Revenue by Region"
+        },
+        tooltip:{
+          callbacks:{
+            label:(ctx)=> `${ctx.label}: ${money(ctx.raw)}`
+          }
+        }
+      }
     }
   }));
 
@@ -271,13 +296,24 @@ function renderCharts(p,r,d){
     data:{
       labels:dLabels,
       datasets:[{
-        label:"Revenue Over Time",
+        label:"Revenue",
         data:dValues
       }]
     },
     options:{
       responsive:true,
-      maintainAspectRatio:false
+      maintainAspectRatio:false,
+      plugins:{
+        title:{
+          display:true,
+          text:"Revenue Over Time"
+        },
+        tooltip:{
+          callbacks:{
+            label:(ctx)=> money(ctx.raw)
+          }
+        }
+      }
     }
   }));
 
@@ -286,13 +322,24 @@ function renderCharts(p,r,d){
     data:{
       labels:dLabels,
       datasets:[{
-        label:"Daily Revenue",
+        label:"Revenue",
         data:dValues
       }]
     },
     options:{
       responsive:true,
-      maintainAspectRatio:false
+      maintainAspectRatio:false,
+      plugins:{
+        title:{
+          display:true,
+          text:"Daily Revenue"
+        },
+        tooltip:{
+          callbacks:{
+            label:(ctx)=> money(ctx.raw)
+          }
+        }
+      }
     }
   }));
 }
