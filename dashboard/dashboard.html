@@ -160,7 +160,7 @@ td{
 
 let raw=[];
 let charts=[];
-let activeFilter = null;
+let activeFilter = null;   // ✅ RESTORED INTERACTIVITY STATE
 
 function toggleTheme(){
   document.body.classList.toggle("light");
@@ -191,6 +191,37 @@ function parseExcelDate(v){
   return s;
 }
 
+/* TABLE */
+function renderTable(data=raw){
+  document.getElementById('table').innerHTML =
+    data.map(r=>`
+      <tr>
+        <td>${r.Date}</td>
+        <td>${r.Product}</td>
+        <td>${r.Region}</td>
+        <td>${r.Revenue}</td>
+      </tr>
+    `).join('');
+}
+
+/* FILTER ENGINE (TOGGLE + MULTI RESET) */
+function applyFilter(field, value){
+
+  const key = field + ":" + value;
+
+  // toggle off
+  if(activeFilter === key){
+    activeFilter = null;
+    render();
+    return;
+  }
+
+  activeFilter = key;
+
+  const filtered = raw.filter(r => r[field] === value);
+  render(filtered);
+}
+
 /* LOAD */
 document.getElementById('file').onchange=e=>{
   const reader=new FileReader();
@@ -212,12 +243,12 @@ document.getElementById('file').onchange=e=>{
   reader.readAsArrayBuffer(e.target.files[0]);
 };
 
-function render(){
+function render(data=raw){
 
   let p={},r={},d={};
   let totalRevenue=0;
 
-  raw.forEach(x=>{
+  (data||raw).forEach(x=>{
     let v=x.Revenue||0;
     totalRevenue+=v;
 
@@ -245,51 +276,16 @@ function render(){
   }
 
   document.getElementById("kpiRevenue").innerText = "$" + totalRevenue.toLocaleString();
-  document.getElementById("kpiOrders").innerText = raw.length;
-  document.getElementById("kpiAvg").innerText = "$" + (totalRevenue/(raw.length||1)).toFixed(2);
+  document.getElementById("kpiOrders").innerText = (data||raw).length;
+  document.getElementById("kpiAvg").innerText = "$" + (totalRevenue/((data||raw).length||1)).toFixed(2);
 
   document.getElementById("kpiTrend").innerHTML =
     `<span style="color:${color}">
       ${arrow} ${pct.toFixed(2)}%
     </span>`;
 
-  renderTable();
+  renderTable(data||raw);
   renderCharts(p,r,d);
-}
-
-function renderTable(){
-
-  const data = activeFilter ? raw.filter(activeFilter) : raw;
-
-  document.getElementById('table').innerHTML =
-    data.map(r=>`
-      <tr>
-        <td>${r.Date}</td>
-        <td>${r.Product}</td>
-        <td>${r.Region}</td>
-        <td>${r.Revenue}</td>
-      </tr>
-    `).join('');
-}
-
-function setFilter(fn){
-  activeFilter = fn;
-  renderTable();
-}
-
-/* CLICK-TO-FOCUS DRILLDOWN */
-function attachDrill(chart, labels, field){
-  chart.options.onClick = (evt, elements)=>{
-    if(!elements.length){
-      activeFilter = null;
-      renderTable();
-      return;
-    }
-
-    const val = labels[elements[0].index];
-    activeFilter = r => r[field] === val;
-    renderTable();
-  };
 }
 
 function renderCharts(p,r,d){
@@ -306,65 +302,61 @@ function renderCharts(p,r,d){
   const dLabels = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
   const dValues = dLabels.map(k=>d[k]);
 
-  const money = (v)=>"$" + Number(v).toLocaleString();
-
-  const c1Chart = new Chart(c1,{
+  charts.push(new Chart(c1,{
     type:'bar',
     data:{labels:pLabels,datasets:[{label:"Revenue",data:pValues}]},
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      plugins:{
-        title:{display:true,text:"Revenue by Product"},
-        tooltip:{callbacks:{label:(ctx)=>money(ctx.raw)}}
+      plugins:{title:{display:true,text:"Revenue by Product"}},
+      onClick:(evt,elements)=>{
+        if(!elements.length) return;
+        applyFilter("Product", pLabels[elements[0].index]);
       }
     }
-  });
-  attachDrill(c1Chart,pLabels,"Product");
+  }));
 
-  const c2Chart = new Chart(c2,{
+  charts.push(new Chart(c2,{
     type:'pie',
     data:{labels:rLabels,datasets:[{label:"Revenue",data:rValues}]},
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      plugins:{
-        title:{display:true,text:"Revenue by Region"},
-        tooltip:{callbacks:{label:(ctx)=>`${ctx.label}: ${money(ctx.raw)}`}}
+      plugins:{title:{display:true,text:"Revenue by Region"}},
+      onClick:(evt,elements)=>{
+        if(!elements.length) return;
+        applyFilter("Region", rLabels[elements[0].index]);
       }
     }
-  });
-  attachDrill(c2Chart,rLabels,"Region");
+  }));
 
-  const c3Chart = new Chart(c3,{
+  charts.push(new Chart(c3,{
     type:'line',
     data:{labels:dLabels,datasets:[{label:"Revenue",data:dValues}]},
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      plugins:{
-        title:{display:true,text:"Revenue Over Time"},
-        tooltip:{callbacks:{label:(ctx)=>money(ctx.raw)}}
+      plugins:{title:{display:true,text:"Revenue Over Time"}},
+      onClick:(evt,elements)=>{
+        if(!elements.length) return;
+        applyFilter("Date", dLabels[elements[0].index]);
       }
     }
-  });
-  attachDrill(c3Chart,dLabels,"Date");
+  }));
 
-  const c4Chart = new Chart(c4,{
+  charts.push(new Chart(c4,{
     type:'bar',
     data:{labels:dLabels,datasets:[{label:"Revenue",data:dValues}]},
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      plugins:{
-        title:{display:true,text:"Daily Revenue"},
-        tooltip:{callbacks:{label:(ctx)=>money(ctx.raw)}}
+      plugins:{title:{display:true,text:"Daily Revenue"}},
+      onClick:(evt,elements)=>{
+        if(!elements.length) return;
+        applyFilter("Date", dLabels[elements[0].index]);
       }
     }
-  });
-  attachDrill(c4Chart,dLabels,"Date");
-
-  charts.push(c1Chart,c2Chart,c3Chart,c4Chart);
+  }));
 }
 
 function exportCSV(){
