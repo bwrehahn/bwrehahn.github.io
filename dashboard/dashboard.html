@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Senior SaaS Dashboard (Stable Final)</title>
+<title>Senior SaaS Dashboard (Clean Data Model)</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -68,8 +68,8 @@ button{
 .box{
   background:var(--card);
   height:320px;
-  padding:10px;
   border-radius:12px;
+  padding:10px;
 }
 
 canvas{
@@ -127,9 +127,9 @@ th{color:var(--muted);}
 let raw=[];
 let charts=[];
 
-/* SAFE VALUE CLEANER */
-function safe(v){
-  return (v===undefined||v===null||v==="undefined"||v==="") ? "" : v;
+/* THEME */
+function toggleTheme(){
+  document.body.classList.toggle("light");
 }
 
 /* DATE FIX */
@@ -142,9 +142,14 @@ function fixDate(v){
   return v;
 }
 
-/* THEME */
-function toggleTheme(){
-  document.body.classList.toggle("light");
+/* SAFE LABEL NORMALIZER (IMPORTANT FIX) */
+function normalize(v, fallback){
+  v = (v ?? "").toString().trim();
+
+  if(!v || v.toLowerCase()==="undefined"){
+    return fallback;
+  }
+  return v;
 }
 
 /* FILE LOAD */
@@ -173,7 +178,7 @@ document.getElementById("file").onchange=e=>{
       });
 
       return o;
-    }).filter(r=>r.Product&&r.Region&&r.Date);
+    }).filter(r=>r.Date);
 
     render();
   };
@@ -190,16 +195,20 @@ function render(){
     let v=Number(x.Revenue)||0;
     rev+=v;
 
-    if(x.Product) p[x.Product]=(p[x.Product]||0)+v;
-    if(x.Region) r[x.Region]=(r[x.Region]||0)+v;
-    if(x.Date) d[x.Date]=(d[x.Date]||0)+v;
+    let product = normalize(x.Product,"Unassigned Product");
+    let region  = normalize(x.Region,"Unassigned Region");
+    let date    = normalize(x.Date,"Unknown Date");
+
+    p[product]=(p[product]||0)+v;
+    r[region]=(r[region]||0)+v;
+    d[date]=(d[date]||0)+v;
   });
 
   let top=Object.keys(p).reduce((a,b)=>p[a]>p[b]?a:b,"-");
 
   document.getElementById("rev").innerText="$"+rev.toLocaleString();
   document.getElementById("ord").innerText=raw.length;
-  document.getElementById("top").innerText=safe(top);
+  document.getElementById("top").innerText=top;
   document.getElementById("avg").innerText="$"+(rev/(raw.length||1)).toFixed(2);
 
   renderTable();
@@ -211,15 +220,15 @@ function renderTable(){
   document.getElementById("table").innerHTML=
     raw.map(r=>`
       <tr>
-        <td>${safe(r.Date)}</td>
-        <td>${safe(r.Product)}</td>
-        <td>${safe(r.Region)}</td>
-        <td>${safe(r.Revenue)}</td>
+        <td>${r.Date}</td>
+        <td>${r.Product}</td>
+        <td>${r.Region}</td>
+        <td>${r.Revenue}</td>
       </tr>
     `).join("");
 }
 
-/* CHARTS (FINAL FIXED) */
+/* CHARTS */
 function renderCharts(p,r,d){
 
   charts.forEach(c=>c.destroy());
