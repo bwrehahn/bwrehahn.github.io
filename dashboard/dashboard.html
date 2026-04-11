@@ -160,6 +160,7 @@ td{
 
 let raw=[];
 let charts=[];
+let activeFilter = null;
 
 function toggleTheme(){
   document.body.classList.toggle("light");
@@ -257,8 +258,11 @@ function render(){
 }
 
 function renderTable(){
+
+  const data = activeFilter ? raw.filter(activeFilter) : raw;
+
   document.getElementById('table').innerHTML =
-    raw.map(r=>`
+    data.map(r=>`
       <tr>
         <td>${r.Date}</td>
         <td>${r.Product}</td>
@@ -266,6 +270,26 @@ function renderTable(){
         <td>${r.Revenue}</td>
       </tr>
     `).join('');
+}
+
+function setFilter(fn){
+  activeFilter = fn;
+  renderTable();
+}
+
+/* CLICK-TO-FOCUS DRILLDOWN */
+function attachDrill(chart, labels, field){
+  chart.options.onClick = (evt, elements)=>{
+    if(!elements.length){
+      activeFilter = null;
+      renderTable();
+      return;
+    }
+
+    const val = labels[elements[0].index];
+    activeFilter = r => r[field] === val;
+    renderTable();
+  };
 }
 
 function renderCharts(p,r,d){
@@ -282,53 +306,65 @@ function renderCharts(p,r,d){
   const dLabels = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
   const dValues = dLabels.map(k=>d[k]);
 
-  charts.push(new Chart(c1,{
+  const money = (v)=>"$" + Number(v).toLocaleString();
+
+  const c1Chart = new Chart(c1,{
     type:'bar',
     data:{labels:pLabels,datasets:[{label:"Revenue",data:pValues}]},
     options:{
       responsive:true,
       maintainAspectRatio:false,
       plugins:{
-        title:{display:true,text:"Revenue by Product"}
+        title:{display:true,text:"Revenue by Product"},
+        tooltip:{callbacks:{label:(ctx)=>money(ctx.raw)}}
       }
     }
-  }));
+  });
+  attachDrill(c1Chart,pLabels,"Product");
 
-  charts.push(new Chart(c2,{
+  const c2Chart = new Chart(c2,{
     type:'pie',
     data:{labels:rLabels,datasets:[{label:"Revenue",data:rValues}]},
     options:{
       responsive:true,
       maintainAspectRatio:false,
       plugins:{
-        title:{display:true,text:"Revenue by Region"}
+        title:{display:true,text:"Revenue by Region"},
+        tooltip:{callbacks:{label:(ctx)=>`${ctx.label}: ${money(ctx.raw)}`}}
       }
     }
-  }));
+  });
+  attachDrill(c2Chart,rLabels,"Region");
 
-  charts.push(new Chart(c3,{
+  const c3Chart = new Chart(c3,{
     type:'line',
     data:{labels:dLabels,datasets:[{label:"Revenue",data:dValues}]},
     options:{
       responsive:true,
       maintainAspectRatio:false,
       plugins:{
-        title:{display:true,text:"Revenue Over Time"}
+        title:{display:true,text:"Revenue Over Time"},
+        tooltip:{callbacks:{label:(ctx)=>money(ctx.raw)}}
       }
     }
-  }));
+  });
+  attachDrill(c3Chart,dLabels,"Date");
 
-  charts.push(new Chart(c4,{
+  const c4Chart = new Chart(c4,{
     type:'bar',
     data:{labels:dLabels,datasets:[{label:"Revenue",data:dValues}]},
     options:{
       responsive:true,
       maintainAspectRatio:false,
       plugins:{
-        title:{display:true,text:"Daily Revenue"}
+        title:{display:true,text:"Daily Revenue"},
+        tooltip:{callbacks:{label:(ctx)=>money(ctx.raw)}}
       }
     }
-  }));
+  });
+  attachDrill(c4Chart,dLabels,"Date");
+
+  charts.push(c1Chart,c2Chart,c3Chart,c4Chart);
 }
 
 function exportCSV(){
