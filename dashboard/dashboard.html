@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Senior SaaS Dashboard (Stable)</title>
+<title>Senior SaaS Dashboard (Stable Final)</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -17,7 +17,7 @@
 
 body.light{
   --bg:#f4f6f8;
-  --card:#ffffff;
+  --card:#fff;
   --text:#111;
   --muted:#555;
 }
@@ -34,12 +34,6 @@ body{
   justify-content:space-between;
   padding:15px;
   border-bottom:1px solid #1f2a44;
-  align-items:center;
-}
-
-.actions{
-  display:flex;
-  gap:10px;
 }
 
 button{
@@ -48,21 +42,6 @@ button{
   border:none;
   padding:6px 10px;
   border-radius:8px;
-  cursor:pointer;
-}
-
-.chips{
-  display:flex;
-  gap:8px;
-  padding:10px 15px;
-  flex-wrap:wrap;
-}
-
-.chip{
-  background:var(--card);
-  padding:6px 10px;
-  border-radius:20px;
-  font-size:12px;
   cursor:pointer;
 }
 
@@ -79,25 +58,6 @@ button{
   border-radius:12px;
 }
 
-.kpi h4{
-  margin:0;
-  font-size:12px;
-  color:var(--muted);
-}
-
-.kpi p{
-  margin:8px 0 0;
-  font-size:20px;
-}
-
-.insight{
-  margin:0 15px 15px;
-  padding:12px;
-  background:var(--card);
-  border-radius:12px;
-  color:var(--muted);
-}
-
 .grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -107,9 +67,9 @@ button{
 
 .box{
   background:var(--card);
-  border-radius:12px;
-  padding:12px;
   height:320px;
+  padding:10px;
+  border-radius:12px;
 }
 
 canvas{
@@ -120,10 +80,8 @@ canvas{
 table{
   width:calc(100% - 30px);
   margin:15px;
-  border-collapse:collapse;
   background:var(--card);
-  border-radius:12px;
-  overflow:hidden;
+  border-collapse:collapse;
 }
 
 td,th{
@@ -138,23 +96,17 @@ th{color:var(--muted);}
 <body>
 
 <div class="header">
-  <div><b>Senior Analytics Dashboard (Fixed)</b></div>
-  <div class="actions">
-    <input type="file" id="file">
-    <button onclick="toggleTheme()">🌙 Theme</button>
-  </div>
+  <b>Senior SaaS Dashboard</b>
+  <input type="file" id="file">
+  <button onclick="toggleTheme()">Theme</button>
 </div>
-
-<div class="chips" id="chips"></div>
 
 <div class="kpis">
-  <div class="kpi"><h4>Revenue</h4><p id="rev">$0</p></div>
-  <div class="kpi"><h4>Orders</h4><p id="ord">0</p></div>
-  <div class="kpi"><h4>Top Product</h4><p id="top">-</p></div>
-  <div class="kpi"><h4>Avg Order</h4><p id="avg">$0</p></div>
+  <div class="kpi"><b>Revenue</b><p id="rev">$0</p></div>
+  <div class="kpi"><b>Orders</b><p id="ord">0</p></div>
+  <div class="kpi"><b>Top Product</b><p id="top">-</p></div>
+  <div class="kpi"><b>Avg</b><p id="avg">$0</p></div>
 </div>
-
-<div class="insight" id="insight">Upload file to begin...</div>
 
 <div class="grid">
   <div class="box"><canvas id="c1"></canvas></div>
@@ -165,9 +117,7 @@ th{color:var(--muted);}
 
 <table>
 <thead>
-<tr>
-<th>Date</th><th>Product</th><th>Region</th><th>Revenue</th>
-</tr>
+<tr><th>Date</th><th>Product</th><th>Region</th><th>Revenue</th></tr>
 </thead>
 <tbody id="table"></tbody>
 </table>
@@ -175,29 +125,26 @@ th{color:var(--muted);}
 <script>
 
 let raw=[];
-let filters={product:null,region:null};
 let charts=[];
 
-/* SAFE RENDER HELPER (fixes "undefined") */
+/* SAFE VALUE CLEANER */
 function safe(v){
-  return (v === undefined || v === null || v === "" || v === "undefined")
-    ? ""
-    : v;
+  return (v===undefined||v===null||v==="undefined"||v==="") ? "" : v;
+}
+
+/* DATE FIX */
+function fixDate(v){
+  if(typeof v==="number"){
+    const d=XLSX.SSF.parse_date_code(v);
+    if(!d) return v;
+    return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+  }
+  return v;
 }
 
 /* THEME */
 function toggleTheme(){
   document.body.classList.toggle("light");
-}
-
-/* DATE FIX */
-function fixDate(v){
-  if(typeof v === "number"){
-    const d = XLSX.SSF.parse_date_code(v);
-    if(!d) return v;
-    return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
-  }
-  return v;
 }
 
 /* FILE LOAD */
@@ -214,19 +161,19 @@ document.getElementById("file").onchange=e=>{
     });
 
     raw=json.map(r=>{
-      let clean={Product:"",Region:"",Date:"",Revenue:0};
+      let o={Product:"",Region:"",Date:"",Revenue:0};
 
       Object.keys(r).forEach(k=>{
-        let key=k.trim().toLowerCase();
+        let key=k.toLowerCase().trim();
 
-        if(key.includes("product")) clean.Product=r[k];
-        if(key.includes("region")) clean.Region=r[k];
-        if(key.includes("date")) clean.Date=fixDate(r[k]);
-        if(key.includes("revenue")) clean.Revenue=Number(r[k])||0;
+        if(key.includes("product")) o.Product=r[k];
+        if(key.includes("region")) o.Region=r[k];
+        if(key.includes("date")) o.Date=fixDate(r[k]);
+        if(key.includes("revenue")) o.Revenue=Number(r[k])||0;
       });
 
-      return clean;
-    }).filter(r=>r.Product && r.Region && r.Date);
+      return o;
+    }).filter(r=>r.Product&&r.Region&&r.Date);
 
     render();
   };
@@ -234,45 +181,12 @@ document.getElementById("file").onchange=e=>{
   reader.readAsArrayBuffer(e.target.files[0]);
 };
 
-/* FILTER */
-function setFilter(type,value){
-  filters[type]=value;
-  render();
-}
-
-function clearFilter(type){
-  filters[type]=null;
-  render();
-}
-
-/* GROUP SAFE */
-function group(data,key){
-  let map=new Map();
-
-  data.forEach(r=>{
-    let k=r[key];
-    if(!k || k==="undefined") return;
-
-    map.set(k,(map.get(k)||0)+r.Revenue);
-  });
-
-  return {
-    labels:[...map.keys()],
-    values:[...map.values()]
-  };
-}
-
 /* RENDER */
 function render(){
 
-  let data=raw.filter(r=>{
-    return (!filters.product||r.Product===filters.product)&&
-           (!filters.region||r.Region===filters.region);
-  });
-
   let rev=0,p={},r={},d={};
 
-  data.forEach(x=>{
+  raw.forEach(x=>{
     let v=Number(x.Revenue)||0;
     rev+=v;
 
@@ -284,21 +198,18 @@ function render(){
   let top=Object.keys(p).reduce((a,b)=>p[a]>p[b]?a:b,"-");
 
   document.getElementById("rev").innerText="$"+rev.toLocaleString();
-  document.getElementById("ord").innerText=data.length;
+  document.getElementById("ord").innerText=raw.length;
   document.getElementById("top").innerText=safe(top);
-  document.getElementById("avg").innerText="$"+(rev/(data.length||1)).toFixed(2);
+  document.getElementById("avg").innerText="$"+(rev/(raw.length||1)).toFixed(2);
 
-  document.getElementById("insight").innerText=
-    `Insight: ${safe(top)} leads revenue with $${rev.toLocaleString()}`;
-
-  renderTable(data);
+  renderTable();
   renderCharts(p,r,d);
 }
 
-/* TABLE (FIXED undefined) */
-function renderTable(data){
+/* TABLE */
+function renderTable(){
   document.getElementById("table").innerHTML=
-    data.map(r=>`
+    raw.map(r=>`
       <tr>
         <td>${safe(r.Date)}</td>
         <td>${safe(r.Product)}</td>
@@ -308,15 +219,15 @@ function renderTable(data){
     `).join("");
 }
 
-/* CHARTS */
+/* CHARTS (FINAL FIXED) */
 function renderCharts(p,r,d){
 
   charts.forEach(c=>c.destroy());
   charts=[];
 
-  const prod = group(p);
-  const reg = group(r);
-  const dat = group(d);
+  const prod={labels:Object.keys(p),values:Object.values(p)};
+  const reg={labels:Object.keys(r),values:Object.values(r)};
+  const dat={labels:Object.keys(d),values:Object.values(d)};
 
   charts.push(new Chart(c1,{
     type:"bar",
