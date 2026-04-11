@@ -224,44 +224,78 @@ function renderTable(){
 
 function renderCharts(p,r,d){
 
-  // ✅ ONLY CHANGE: remove bad labels here
-  p = removeBadKeys(p);
-  r = removeBadKeys(r);
-  d = removeBadKeys(d);
-
   charts.forEach(c=>c.destroy());
   charts=[];
 
+  const pLabels = Object.keys(p);
+  const pValues = Object.values(p);
+
+  const rLabels = Object.keys(r);
+  const rValues = Object.values(r);
+
+  const dLabels = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
+  const dValues = dLabels.map(k => d[k]);
+
   charts.push(new Chart(c1,{
     type:'bar',
-    data:{labels:Object.keys(p),datasets:[{data:Object.values(p)}]},
-    options:{responsive:true,maintainAspectRatio:false}
+    data:{
+      labels:pLabels,
+      datasets:[{
+        label:"Revenue by Product",
+        data:pValues
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false
+    }
   }));
 
   charts.push(new Chart(c2,{
     type:'pie',
-    data:{labels:Object.keys(r),datasets:[{data:Object.values(r)}]},
-    options:{responsive:true,maintainAspectRatio:false}
+    data:{
+      labels:rLabels,
+      datasets:[{
+        label:"Revenue by Region",
+        data:rValues
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false
+    }
   }));
-
-  const sortedDates = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
 
   charts.push(new Chart(c3,{
     type:'line',
     data:{
-      labels: sortedDates,
-      datasets:[{data: sortedDates.map(k=>d[k])}]
+      labels:dLabels,
+      datasets:[{
+        label:"Revenue Over Time",
+        data:dValues
+      }]
     },
-    options:{responsive:true,maintainAspectRatio:false}
+    options:{
+      responsive:true,
+      maintainAspectRatio:false
+    }
   }));
 
   charts.push(new Chart(c4,{
     type:'bar',
-    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
-    options:{responsive:true,maintainAspectRatio:false}
+    data:{
+      labels:dLabels,
+      datasets:[{
+        label:"Daily Revenue",
+        data:dValues
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false
+    }
   }));
 }
-
 function exportCSV(){
   let csv="Date,Product,Region,Revenue\n";
   raw.forEach(r=>{
