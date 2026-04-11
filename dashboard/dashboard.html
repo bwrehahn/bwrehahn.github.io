@@ -161,12 +161,16 @@ function parseExcelDate(v){
   return s;
 }
 
-/* ✅ NEW: CLEAN LABEL FUNCTION */
-function cleanLabel(v, fallback){
-  if(v === null || v === undefined) return fallback;
-  v = String(v).trim();
-  if(!v || v.toLowerCase() === "undefined") return fallback;
-  return v;
+/* ✅ SAFE FIX: REMOVE BAD LABELS ONLY AT CHART LEVEL */
+function removeBadKeys(obj){
+  return Object.fromEntries(
+    Object.entries(obj).filter(([k,v]) =>
+      k !== undefined &&
+      k !== null &&
+      k !== "" &&
+      k !== "undefined"
+    )
+  );
 }
 
 /* FILE LOAD */
@@ -195,15 +199,11 @@ function render(){
   let p={},r={},d={};
 
   raw.forEach(x=>{
-    let v = x.Revenue || 0;
+    let v=x.Revenue||0;
 
-    let product = cleanLabel(x.Product, "Unknown Product");
-    let region  = cleanLabel(x.Region, "Unknown Region");
-    let date    = cleanLabel(x.Date, "Unknown Date");
-
-    p[product] = (p[product] || 0) + v;
-    r[region]  = (r[region] || 0) + v;
-    d[date]    = (d[date] || 0) + v;
+    p[x.Product]=(p[x.Product]||0)+v;
+    r[x.Region]=(r[x.Region]||0)+v;
+    d[x.Date]=(d[x.Date]||0)+v;
   });
 
   renderTable();
@@ -223,6 +223,11 @@ function renderTable(){
 }
 
 function renderCharts(p,r,d){
+
+  // ✅ ONLY CHANGE: remove bad labels here
+  p = removeBadKeys(p);
+  r = removeBadKeys(r);
+  d = removeBadKeys(d);
 
   charts.forEach(c=>c.destroy());
   charts=[];
