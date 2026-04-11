@@ -51,69 +51,18 @@ button{
   cursor:pointer;
 }
 
-button:hover{
-  opacity:.85;
-}
-
-.chips{
-  display:flex;
-  gap:8px;
-  padding:10px 15px;
-  flex-wrap:wrap;
-}
-
-.chip{
-  background:var(--card);
-  padding:6px 10px;
-  border-radius:20px;
-  font-size:12px;
-  cursor:pointer;
-}
-
-.kpis{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:10px;
-  padding:15px;
-}
-
-.kpi{
-  background:var(--card);
-  padding:15px;
-  border-radius:12px;
-}
-
-.kpi h4{
-  margin:0;
-  font-size:12px;
-  color:var(--muted);
-}
-
-.kpi p{
-  font-size:20px;
-  margin:8px 0 0;
-}
-
-.insight{
-  margin:0 15px 15px;
-  padding:12px;
-  background:var(--card);
-  border-radius:12px;
-  color:var(--muted);
-}
-
 .grid{
   display:grid;
-  grid-template-columns:repeat(2, minmax(0, 1fr));
+  grid-template-columns:repeat(2,1fr);
   gap:15px;
   padding:15px;
 }
 
 .box{
   background:var(--card);
-  border-radius:12px;
-  padding:12px;
   height:320px;
+  border-radius:12px;
+  padding:10px;
 }
 
 canvas{
@@ -124,20 +73,14 @@ canvas{
 table{
   width:calc(100% - 30px);
   margin:15px;
-  border-collapse:collapse;
   background:var(--card);
-  border-radius:12px;
-  overflow:hidden;
+  border-collapse:collapse;
 }
 
 td,th{
   padding:8px;
   border-bottom:1px solid #1f2a44;
-}
-
-th{
-  color:var(--muted);
-  cursor:pointer;
+  color:var(--text);
 }
 </style>
 </head>
@@ -145,25 +88,14 @@ th{
 <body>
 
 <div class="header">
-  <div><b>Senior Analytics Dashboard</b></div>
+  <b>Senior SaaS Dashboard</b>
 
   <div class="actions">
     <input type="file" id="file">
+    <button onclick="toggleTheme()">Theme</button>
     <button onclick="exportCSV()">Export CSV</button>
-    <button onclick="toggleTheme()">🌙 Theme</button>
   </div>
 </div>
-
-<div class="chips" id="chips"></div>
-
-<div class="kpis">
-  <div class="kpi"><h4>Revenue</h4><p id="rev">$0</p></div>
-  <div class="kpi"><h4>Orders</h4><p id="ord">0</p></div>
-  <div class="kpi"><h4>Top Product</h4><p id="top">-</p></div>
-  <div class="kpi"><h4>Avg Order</h4><p id="avg">$0</p></div>
-</div>
-
-<div class="insight" id="insight">Upload file to begin analysis...</div>
 
 <div class="grid">
   <div class="box"><canvas id="c1"></canvas></div>
@@ -184,80 +116,91 @@ th{
 <script>
 
 let raw=[];
-let filters={product:null,region:null};
 let charts=[];
 
+/* THEME */
 function toggleTheme(){
   document.body.classList.toggle("light");
 }
 
-/* FILE LOAD */
+/* ✅ REAL EXCEL DATE FIX (IMPORTANT PART) */
+function parseExcelDate(v){
+
+  if(v === null || v === undefined) return null;
+
+  // Excel serial number
+  if(typeof v === "number"){
+    const date = XLSX.SSF.parse_date_code(v);
+    if(!date) return null;
+    return `${date.y}-${String(date.m).padStart(2,'0')}-${String(date.d).padStart(2,'0')}`;
+  }
+
+  // already string
+  let s = String(v).trim();
+
+  if(!s || s.toLowerCase()==="undefined") return null;
+
+  // try native parse fallback
+  const d = new Date(s);
+  if(!isNaN(d.getTime())){
+    return d.toISOString().split("T")[0];
+  }
+
+  return s;
+}
+
+/* LOAD FILE */
 document.getElementById('file').onchange=e=>{
-  let r=new FileReader();
-  r.onload=ev=>{
-    let wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
-    let sh=wb.Sheets[wb.SheetNames[0]];
-    raw=XLSX.utils.sheet_to_json(sh);
+  const reader=new FileReader();
+
+  reader.onload=ev=>{
+    const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+    const sheet=wb.Sheets[wb.SheetNames[0]];
+
+    raw=XLSX.utils.sheet_to_json(sheet,{defval:""}).map(r=>({
+      Date: parseExcelDate(r.Date),
+      Product: r.Product,
+      Region: r.Region,
+      Revenue: Number(r.Revenue)||0
+    }));
+
     render();
   };
-  r.readAsArrayBuffer(e.target.files[0]);
-};
 
-/* EXPORT CSV (RESTORED) */
-function exportCSV(){
-  let csv="Date,Product,Region,Revenue\n";
-  raw.forEach(r=>{
-    csv+=`${r.Date},${r.Product},${r.Region},${r.Revenue}\n`;
-  });
-  let blob=new Blob([csv],{type:"text/csv"});
-  let a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="data.csv";
-  a.click();
-}
+  reader.readAsArrayBuffer(e.target.files[0]);
+};
 
 /* RENDER */
 function render(){
 
-  let data=raw.filter(r=>{
-    return (!filters.product||r.Product===filters.product)&&
-           (!filters.region||r.Region===filters.region);
-  });
+  let p={},r={},d={};
 
-  let rev=0,p={},r={},d={};
-
-  data.forEach(x=>{
-    let v=+x.Revenue||0;
-    rev+=v;
+  raw.forEach(x=>{
+    let v=x.Revenue||0;
 
     p[x.Product]=(p[x.Product]||0)+v;
     r[x.Region]=(r[x.Region]||0)+v;
     d[x.Date]=(d[x.Date]||0)+v;
   });
 
-  let top=Object.keys(p).reduce((a,b)=>p[a]>p[b]?a:b,"-");
-
-  document.getElementById('rev').innerText="$"+rev.toLocaleString();
-  document.getElementById('ord').innerText=data.length;
-  document.getElementById('top').innerText=top;
-  document.getElementById('avg').innerText="$"+(rev/(data.length||1)).toFixed(2);
-
-  renderTable(data);
+  renderTable();
   renderCharts(p,r,d);
 }
 
-function renderTable(data){
+/* TABLE */
+function renderTable(){
   document.getElementById('table').innerHTML=
-    data.map(r=>`
+    raw.map(r=>`
       <tr>
         <td>${r.Date}</td>
         <td>${r.Product}</td>
         <td>${r.Region}</td>
         <td>${r.Revenue}</td>
-      </tr>`).join('');
+      </tr>
+    `).join('');
 }
 
-/* FIXED: SORTED DATE CHART ONLY */
+/* CHARTS */
 function renderCharts(p,r,d){
 
   charts.forEach(c=>c.destroy());
@@ -275,16 +218,14 @@ function renderCharts(p,r,d){
     options:{responsive:true,maintainAspectRatio:false}
   }));
 
-  /* ✅ FIXED BOTTOM CHART */
-  const sortedDates = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
+  /* ✅ FIXED TIME SERIES */
+  const sorted = Object.keys(d).sort();
 
   charts.push(new Chart(c3,{
     type:'line',
     data:{
-      labels: sortedDates,
-      datasets:[{
-        data: sortedDates.map(k=>d[k])
-      }]
+      labels: sorted,
+      datasets:[{data: sorted.map(k=>d[k])}]
     },
     options:{responsive:true,maintainAspectRatio:false}
   }));
@@ -294,6 +235,19 @@ function renderCharts(p,r,d){
     data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
     options:{responsive:true,maintainAspectRatio:false}
   }));
+}
+
+/* EXPORT */
+function exportCSV(){
+  let csv="Date,Product,Region,Revenue\n";
+  raw.forEach(r=>{
+    csv+=`${r.Date},${r.Product},${r.Region},${r.Revenue}\n`;
+  });
+  const blob=new Blob([csv],{type:"text/csv"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="data.csv";
+  a.click();
 }
 
 </script>
