@@ -107,7 +107,7 @@ button:hover{
   color:var(--muted);
 }
 
-/* CHART GRID (FIXED) */
+/* GRID */
 .grid{
   display:grid;
   grid-template-columns:repeat(2, minmax(0, 1fr));
@@ -120,10 +120,9 @@ button:hover{
   border-radius:12px;
   padding:12px;
   height:320px;
-  position:relative;
 }
 
-/* FIX: prevents squished charts */
+/* CHART FIX */
 canvas{
   width:100%!important;
   height:100%!important;
@@ -159,7 +158,6 @@ th{
 
   <div class="actions">
     <input type="file" id="file">
-    <button onclick="exportCSV()">Export CSV</button>
     <button onclick="toggleTheme()">🌙 Theme</button>
   </div>
 </div>
@@ -202,7 +200,7 @@ let raw=[];
 let filters={product:null,region:null};
 let charts=[];
 
-/* THEME TOGGLE */
+/* THEME */
 function toggleTheme(){
   document.body.classList.toggle("light");
 }
@@ -271,21 +269,8 @@ function render(){
   document.getElementById('insight').innerText=
     `Insight: ${top} is leading revenue. Total revenue: $${rev.toLocaleString()}`;
 
-  renderChips();
   renderTable(data);
   renderCharts(p,r,d);
-}
-
-/* CHIPS */
-function renderChips(){
-  let c=document.getElementById('chips');
-  c.innerHTML="";
-
-  if(filters.product)
-    c.innerHTML+=`<div class="chip" onclick="clearFilter('product')">Product: ${filters.product} ✕</div>`;
-
-  if(filters.region)
-    c.innerHTML+=`<div class="chip" onclick="clearFilter('region')">Region: ${filters.region} ✕</div>`;
 }
 
 /* TABLE */
@@ -300,46 +285,53 @@ function renderTable(data){
       </tr>`).join('');
 }
 
-/* CHARTS + DRILLDOWN */
+/* CHARTS (FIXED ALIGNMENT) */
 function renderCharts(p,r,d){
 
   charts.forEach(c=>c.destroy());
   charts=[];
 
+  const baseOptions = {
+    responsive:true,
+    maintainAspectRatio:false,
+
+    layout:{
+      padding:{left:10,right:10,top:10,bottom:10}
+    },
+
+    scales:{
+      x:{
+        offset:true,
+        ticks:{align:"center"}
+      },
+      y:{
+        beginAtZero:true
+      }
+    }
+  };
+
   charts.push(new Chart(c1,{
     type:'bar',
     data:{labels:Object.keys(p),datasets:[{data:Object.values(p)}]},
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      onClick:(e,i)=>{
-        if(i.length)setFilter('product',Object.keys(p)[i[0].index]);
-      }
-    }
+    options:baseOptions
   }));
 
   charts.push(new Chart(c2,{
     type:'pie',
     data:{labels:Object.keys(r),datasets:[{data:Object.values(r)}]},
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      onClick:(e,i)=>{
-        if(i.length)setFilter('region',Object.keys(r)[i[0].index]);
-      }
-    }
+    options:baseOptions
   }));
 
   charts.push(new Chart(c3,{
     type:'line',
     data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
-    options:{responsive:true,maintainAspectRatio:false}
+    options:baseOptions
   }));
 
   charts.push(new Chart(c4,{
     type:'bar',
     data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
-    options:{responsive:true,maintainAspectRatio:false}
+    options:baseOptions
   }));
 }
 
