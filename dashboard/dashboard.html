@@ -55,7 +55,7 @@ button:hover{
   opacity:.85;
 }
 
-/* KPI GRID */
+/* ✅ KPI STRIP (ADDED) */
 .kpis{
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -73,13 +73,6 @@ button:hover{
 .kpi span{
   font-weight:bold;
   margin-left:6px;
-}
-
-/* sparkline */
-.spark{
-  width:100%;
-  height:30px;
-  margin-top:6px;
 }
 
 .grid{
@@ -138,24 +131,12 @@ td{
   </div>
 </div>
 
-<!-- KPI -->
+<!-- ✅ KPI ROW (ADDED) -->
 <div class="kpis">
-  <div class="kpi">
-    Revenue <span id="kpiRevenue">-</span>
-    <div id="sparkRevenue" class="spark"></div>
-  </div>
-
-  <div class="kpi">
-    Orders <span id="kpiOrders">-</span>
-  </div>
-
-  <div class="kpi">
-    Avg Order <span id="kpiAvg">-</span>
-  </div>
-
-  <div class="kpi">
-    Trend <span id="kpiTrend">-</span>
-  </div>
+  <div class="kpi">Revenue <span id="kpiRevenue">-</span></div>
+  <div class="kpi">Orders <span id="kpiOrders">-</span></div>
+  <div class="kpi">Avg Order <span id="kpiAvg">-</span></div>
+  <div class="kpi">Trend <span id="kpiTrend">-</span></div>
 </div>
 
 <div class="grid">
@@ -185,6 +166,7 @@ function toggleTheme(){
 
 /* DATE PARSE */
 function parseExcelDate(v){
+
   if(v === null || v === undefined) return "";
 
   if(typeof v === "number"){
@@ -205,35 +187,6 @@ function parseExcelDate(v){
   }
 
   return s;
-}
-
-/* ===== SPARKLINE (NEW) ===== */
-function drawSparkline(containerId, data){
-  const el = document.createElement("canvas");
-  document.getElementById(containerId).innerHTML = "";
-  document.getElementById(containerId).appendChild(el);
-
-  new Chart(el, {
-    type: 'line',
-    data: {
-      labels: data.map((_,i)=>i),
-      datasets: [{
-        data: data,
-        borderWidth: 2,
-        pointRadius: 0,
-        fill: false
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { display: false },
-        y: { display: false }
-      }
-    }
-  });
 }
 
 /* FILE LOAD */
@@ -272,30 +225,22 @@ function render(){
     d[x.Date]=(d[x.Date]||0)+v;
   });
 
+  /* =========================
+     KPI CALC (ADDED)
+  ========================== */
   const dates = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
   const values = dates.map(k=>d[k]);
 
-  let trendArrow = "—";
-  let pctChange = 0;
-
+  let trend = "—";
   if(values.length > 1){
-    const prev = values[values.length-2];
-    const last = values[values.length-1];
-
-    pctChange = ((last - prev) / (prev || 1)) * 100;
-    trendArrow = pctChange >= 0 ? "▲" : "▼";
+    const diff = values[values.length-1] - values[values.length-2];
+    trend = diff >= 0 ? "▲" : "▼";
   }
 
-  /* KPI UPDATE */
   document.getElementById("kpiRevenue").innerText = "$" + totalRevenue.toLocaleString();
   document.getElementById("kpiOrders").innerText = raw.length;
   document.getElementById("kpiAvg").innerText = "$" + (totalRevenue / (raw.length||1)).toFixed(2);
-
-  document.getElementById("kpiTrend").innerText =
-    `${trendArrow} ${pctChange.toFixed(2)}%`;
-
-  /* SPARKLINE */
-  drawSparkline("sparkRevenue", values);
+  document.getElementById("kpiTrend").innerText = trend;
 
   renderTable();
   renderCharts(p,r,d);
@@ -327,10 +272,31 @@ function renderCharts(p,r,d){
   const dLabels = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
   const dValues = dLabels.map(k=>d[k]);
 
-  charts.push(new Chart(c1,{type:'bar',data:{labels:pLabels,datasets:[{data:pValues}]} }));
-  charts.push(new Chart(c2,{type:'pie',data:{labels:rLabels,datasets:[{data:rValues}]} }));
-  charts.push(new Chart(c3,{type:'line',data:{labels:dLabels,datasets:[{data:dValues}]} }));
-  charts.push(new Chart(c4,{type:'bar',data:{labels:dLabels,datasets:[{data:dValues}]} }));
+  const money = (v)=>"$" + Number(v).toLocaleString();
+
+  charts.push(new Chart(c1,{
+    type:'bar',
+    data:{ labels:pLabels, datasets:[{ label:"Revenue", data:pValues }]},
+    options:{ responsive:true, maintainAspectRatio:false }
+  }));
+
+  charts.push(new Chart(c2,{
+    type:'pie',
+    data:{ labels:rLabels, datasets:[{ label:"Revenue", data:rValues }]},
+    options:{ responsive:true, maintainAspectRatio:false }
+  }));
+
+  charts.push(new Chart(c3,{
+    type:'line',
+    data:{ labels:dLabels, datasets:[{ label:"Revenue", data:dValues }]},
+    options:{ responsive:true, maintainAspectRatio:false }
+  }));
+
+  charts.push(new Chart(c4,{
+    type:'bar',
+    data:{ labels:dLabels, datasets:[{ label:"Revenue", data:dValues }]},
+    options:{ responsive:true, maintainAspectRatio:false }
+  }));
 }
 
 function exportCSV(){
