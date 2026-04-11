@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Stable Enterprise Dashboard</title>
+<title>Stable Dashboard FIXED</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -17,29 +17,31 @@ body{
 
 .header{
   padding:15px;
-  display:flex;
-  justify-content:space-between;
   border-bottom:1px solid #1f2a44;
 }
 
+/* FIXED GRID (no flex conflicts) */
 .grid{
   display:grid;
-  grid-template-columns:repeat(2,1fr);
+  grid-template-columns:repeat(2, 1fr);
   gap:15px;
   padding:15px;
 }
 
+/* FIXED HEIGHT (THIS IS THE KEY) */
 .card{
   background:#111c33;
   border-radius:12px;
-  padding:12px;
+  padding:10px;
   height:320px;
+  position:relative;
 }
 
-/* FIX CHART OVERFLOW */
+/* HARD FIX FOR CHART SIZE */
 canvas{
   width:100% !important;
-  height:100% !important;
+  height:300px !important;
+  display:block;
 }
 
 .kpis{
@@ -54,32 +56,21 @@ canvas{
   padding:12px;
   border-radius:10px;
 }
-
-.kpi h4{
-  margin:0;
-  font-size:12px;
-  color:#94a3b8;
-}
-
-.kpi p{
-  margin:6px 0 0;
-  font-size:18px;
-}
 </style>
 </head>
 
 <body>
 
 <div class="header">
-  <div><b>Clean Analytics Dashboard</b></div>
+  <b>FIXED DASHBOARD (No Undefined + No Squish)</b>
   <input type="file" id="file">
 </div>
 
 <div class="kpis">
-  <div class="kpi"><h4>Revenue</h4><p id="rev">$0</p></div>
-  <div class="kpi"><h4>Orders</h4><p id="ord">0</p></div>
-  <div class="kpi"><h4>Top Product</h4><p id="top">-</p></div>
-  <div class="kpi"><h4>Avg Order</h4><p id="avg">$0</p></div>
+  <div class="kpi"><div>Revenue</div><div id="rev">$0</div></div>
+  <div class="kpi"><div>Orders</div><div id="ord">0</div></div>
+  <div class="kpi"><div>Top</div><div id="top">-</div></div>
+  <div class="kpi"><div>Avg</div><div id="avg">$0</div></div>
 </div>
 
 <div class="grid">
@@ -94,29 +85,24 @@ canvas{
 let raw=[];
 let charts=[];
 
-/* CLEAN ROWS (fixes Excel inconsistencies) */
+/* SAFE EXCEL PARSER */
 function cleanRow(row){
-  let clean={
-    Product:null,
-    Region:null,
-    Date:null,
-    Revenue:null
-  };
+  let out={Product:"",Region:"",Date:"",Revenue:0};
 
   Object.keys(row).forEach(k=>{
-    let key=k.toLowerCase().replace(/\s+/g,"");
+    let key=k.toLowerCase().replace(/\s/g,"");
 
-    if(key.includes("product")) clean.Product=row[k];
-    else if(key.includes("region")) clean.Region=row[k];
-    else if(key.includes("date")) clean.Date=row[k];
-    else if(key.includes("revenue")) clean.Revenue=row[k];
+    if(key.includes("product")) out.Product=row[k];
+    if(key.includes("region")) out.Region=row[k];
+    if(key.includes("date")) out.Date=row[k];
+    if(key.includes("revenue")) out.Revenue=row[k];
   });
 
-  return clean;
+  return out;
 }
 
 /* FILE LOAD */
-document.getElementById('file').addEventListener('change',e=>{
+document.getElementById("file").addEventListener("change",e=>{
   let file=e.target.files[0];
   let reader=new FileReader();
 
@@ -134,88 +120,82 @@ document.getElementById('file').addEventListener('change',e=>{
   reader.readAsBinaryString(file);
 });
 
-/* SANITIZER (THIS FIXES "undefined") */
-function sanitize(obj){
-  let labels=[];
-  let values=[];
+/* SAFE GROUPING (NO OBJECT KEYS USED IN CHARTS DIRECTLY) */
+function group(data,field){
+  let map=new Map();
 
-  Object.entries(obj).forEach(([k,v])=>{
-    if(k && k.trim() !== "" && k !== "undefined"){
-      labels.push(k);
-      values.push(v);
-    }
+  data.forEach(r=>{
+    let key=r[field];
+    if(!key || key==="undefined") return;
+
+    let val=Number(r.Revenue)||0;
+    map.set(key,(map.get(key)||0)+val);
   });
 
-  return {labels, values};
+  return {
+    labels:Array.from(map.keys()),
+    values:Array.from(map.values())
+  };
 }
 
-/* RENDER */
+/* MAIN RENDER */
 function render(){
 
-  let rev=0;
+  let total=0;
   let p={},r={},d={};
 
   raw.forEach(x=>{
     let v=Number(x.Revenue)||0;
-    rev+=v;
+    total+=v;
 
-    if(x.Product) p[x.Product]=(p[x.Product]||0)+v;
-    if(x.Region) r[x.Region]=(r[x.Region]||0)+v;
-    if(x.Date) d[x.Date]=(d[x.Date]||0)+v;
+    p[x.Product]=(p[x.Product]||0)+v;
+    r[x.Region]=(r[x.Region]||0)+v;
+    d[x.Date]=(d[x.Date]||0)+v;
   });
 
-  let top=Object.keys(p).reduce((a,b)=>p[a]>p[b]?a:b,"-");
-
-  document.getElementById("rev").innerText="$"+rev.toLocaleString();
+  document.getElementById("rev").innerText="$"+total;
   document.getElementById("ord").innerText=raw.length;
-  document.getElementById("top").innerText=top;
-  document.getElementById("avg").innerText="$"+(rev/(raw.length||1)).toFixed(2);
 
-  drawCharts(p,r,d);
+  let top=Object.keys(p).reduce((a,b)=>p[a]>p[b]?a:b,"-");
+  document.getElementById("top").innerText=top;
+  document.getElementById("avg").innerText="$"+(total/(raw.length||1)).toFixed(2);
+
+  drawCharts();
 }
 
-/* CHARTS (FULLY SAFE) */
-function drawCharts(p,r,d){
+/* FINAL SAFE CHARTS */
+function drawCharts(){
 
   charts.forEach(c=>c.destroy());
   charts=[];
 
-  let pClean=sanitize(p);
-  let rClean=sanitize(r);
-  let dClean=sanitize(d);
+  let p=group(raw,"Product");
+  let r=group(raw,"Region");
+  let d=group(raw,"Date");
 
   charts.push(new Chart(c1,{
     type:"bar",
-    data:{
-      labels:pClean.labels,
-      datasets:[{data:pClean.values}]
-    }
+    data:{labels:p.labels,datasets:[{data:p.values}]},
+    options:{responsive:true}
   }));
 
   charts.push(new Chart(c2,{
     type:"pie",
-    data:{
-      labels:rClean.labels,
-      datasets:[{data:rClean.values}]
-    }
+    data:{labels:r.labels,datasets:[{data:r.values}]},
+    options:{responsive:true}
   }));
 
   charts.push(new Chart(c3,{
     type:"line",
-    data:{
-      labels:dClean.labels,
-      datasets:[{data:dClean.values}]
-    }
+    data:{labels:d.labels,datasets:[{data:d.values}]},
+    options:{responsive:true}
   }));
 
   charts.push(new Chart(c4,{
     type:"bar",
-    data:{
-      labels:dClean.labels,
-      datasets:[{data:dClean.values}]
-    }
+    data:{labels:d.labels,datasets:[{data:d.values}]},
+    options:{responsive:true}
   }));
-
 }
 
 </script>
