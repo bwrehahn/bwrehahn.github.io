@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Senior SaaS Dashboard</title>
+<title>Senior SaaS Dashboard (Fixed Dates + Stable Charts)</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -15,10 +15,9 @@
   --muted:#94a3b8;
 }
 
-/* LIGHT MODE */
 body.light{
   --bg:#f4f6f8;
-  --card:#ffffff;
+  --card:#fff;
   --text:#111;
   --muted:#555;
 }
@@ -30,18 +29,12 @@ body{
   color:var(--text);
 }
 
-/* HEADER */
 .header{
   display:flex;
   justify-content:space-between;
   padding:15px;
   border-bottom:1px solid #1f2a44;
   align-items:center;
-}
-
-.actions{
-  display:flex;
-  gap:10px;
 }
 
 button{
@@ -53,27 +46,6 @@ button{
   cursor:pointer;
 }
 
-button:hover{
-  opacity:.85;
-}
-
-/* CHIPS */
-.chips{
-  display:flex;
-  gap:8px;
-  padding:10px 15px;
-  flex-wrap:wrap;
-}
-
-.chip{
-  background:var(--card);
-  padding:6px 10px;
-  border-radius:20px;
-  font-size:12px;
-  cursor:pointer;
-}
-
-/* KPI */
 .kpis{
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -87,30 +59,9 @@ button:hover{
   border-radius:12px;
 }
 
-.kpi h4{
-  margin:0;
-  font-size:12px;
-  color:var(--muted);
-}
-
-.kpi p{
-  font-size:20px;
-  margin:8px 0 0;
-}
-
-/* INSIGHT */
-.insight{
-  margin:0 15px 15px;
-  padding:12px;
-  background:var(--card);
-  border-radius:12px;
-  color:var(--muted);
-}
-
-/* GRID */
 .grid{
   display:grid;
-  grid-template-columns:repeat(2, minmax(0, 1fr));
+  grid-template-columns:repeat(2,1fr);
   gap:15px;
   padding:15px;
 }
@@ -118,24 +69,20 @@ button:hover{
 .box{
   background:var(--card);
   border-radius:12px;
-  padding:12px;
   height:320px;
+  padding:10px;
 }
 
-/* CHART FIX */
 canvas{
   width:100%!important;
   height:100%!important;
 }
 
-/* TABLE */
 table{
   width:calc(100% - 30px);
   margin:15px;
-  border-collapse:collapse;
   background:var(--card);
-  border-radius:12px;
-  overflow:hidden;
+  border-collapse:collapse;
 }
 
 td,th{
@@ -143,40 +90,25 @@ td,th{
   border-bottom:1px solid #1f2a44;
 }
 
-th{
-  color:var(--muted);
-  cursor:pointer;
-}
+th{color:var(--muted);}
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <div class="header">
-  <div><b>Senior Analytics Dashboard</b></div>
-
-  <div class="actions">
-    <input type="file" id="file">
-    <button onclick="toggleTheme()">🌙 Theme</button>
-  </div>
+  <b>Senior SaaS Dashboard</b>
+  <input type="file" id="file">
+  <button onclick="toggleTheme()">Theme</button>
 </div>
 
-<!-- FILTER CHIPS -->
-<div class="chips" id="chips"></div>
-
-<!-- KPI -->
 <div class="kpis">
-  <div class="kpi"><h4>Revenue</h4><p id="rev">$0</p></div>
-  <div class="kpi"><h4>Orders</h4><p id="ord">0</p></div>
-  <div class="kpi"><h4>Top Product</h4><p id="top">-</p></div>
-  <div class="kpi"><h4>Avg Order</h4><p id="avg">$0</p></div>
+  <div class="kpi"><b>Revenue</b><p id="rev">$0</p></div>
+  <div class="kpi"><b>Orders</b><p id="ord">0</p></div>
+  <div class="kpi"><b>Top Product</b><p id="top">-</p></div>
+  <div class="kpi"><b>Avg</b><p id="avg">$0</p></div>
 </div>
 
-<!-- INSIGHT -->
-<div class="insight" id="insight">Upload file to begin analysis...</div>
-
-<!-- CHARTS -->
 <div class="grid">
   <div class="box"><canvas id="c1"></canvas></div>
   <div class="box"><canvas id="c2"></canvas></div>
@@ -184,12 +116,9 @@ th{
   <div class="box"><canvas id="c4"></canvas></div>
 </div>
 
-<!-- TABLE -->
 <table>
 <thead>
-<tr>
-<th>Date</th><th>Product</th><th>Region</th><th>Revenue</th>
-</tr>
+<tr><th>Date</th><th>Product</th><th>Region</th><th>Revenue</th></tr>
 </thead>
 <tbody id="table"></tbody>
 </table>
@@ -197,7 +126,6 @@ th{
 <script>
 
 let raw=[];
-let filters={product:null,region:null};
 let charts=[];
 
 /* THEME */
@@ -205,71 +133,92 @@ function toggleTheme(){
   document.body.classList.toggle("light");
 }
 
+/* CLEAN VALUE */
+function clean(v, fallback="Unassigned"){
+  if(v === null || v === undefined) return fallback;
+
+  v = String(v).replace(/\u00A0/g," ").trim();
+
+  if(!v || v.toLowerCase()==="undefined") return fallback;
+
+  return v;
+}
+
+/* FIX EXCEL DATE */
+function parseDate(v){
+  if(v === null || v === undefined) return null;
+
+  if(typeof v === "number"){
+    const d = XLSX.SSF.parse_date_code(v);
+    if(!d) return null;
+    return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+  }
+
+  let s = String(v).trim();
+  if(!s || s.toLowerCase()==="undefined") return null;
+
+  return s;
+}
+
 /* FILE LOAD */
 document.getElementById('file').onchange=e=>{
-  let r=new FileReader();
-  r.onload=ev=>{
-    let wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
-    let sh=wb.Sheets[wb.SheetNames[0]];
-    raw=XLSX.utils.sheet_to_json(sh);
+  const reader=new FileReader();
+
+  reader.onload=ev=>{
+    const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+    const sh=wb.Sheets[wb.SheetNames[0]];
+
+    const json=XLSX.utils.sheet_to_json(sh,{defval:""});
+
+    raw=json.map(r=>{
+      let o={Product:"",Region:"",Date:"",Revenue:0};
+
+      Object.keys(r).forEach(k=>{
+        let key=k.toLowerCase().trim();
+
+        if(key.includes("product")) o.Product=r[k];
+        if(key.includes("region")) o.Region=r[k];
+        if(key.includes("date")) o.Date=parseDate(r[k]);
+        if(key.includes("revenue")) o.Revenue=Number(r[k])||0;
+      });
+
+      return o;
+    }).filter(r=>r.Date);
+
     render();
   };
-  r.readAsArrayBuffer(e.target.files[0]);
+
+  reader.readAsArrayBuffer(e.target.files[0]);
 };
-
-/* FILTER */
-function setFilter(type,value){
-  filters[type]=value;
-  render();
-}
-
-function clearFilter(type){
-  filters[type]=null;
-  render();
-}
-
-/* EXPORT */
-function exportCSV(){
-  let csv="Date,Product,Region,Revenue\n";
-  raw.forEach(r=>{
-    csv+=`${r.Date},${r.Product},${r.Region},${r.Revenue}\n`;
-  });
-  let blob=new Blob([csv],{type:"text/csv"});
-  let a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="data.csv";
-  a.click();
-}
 
 /* RENDER */
 function render(){
 
-  let data=raw.filter(r=>{
-    return (!filters.product||r.Product===filters.product)&&
-           (!filters.region||r.Region===filters.region);
-  });
+  let rev=0,p={},r={},d={},rows=[];
 
-  let rev=0,p={},r={},d={};
-
-  data.forEach(x=>{
-    let v=+x.Revenue||0;
+  raw.forEach(x=>{
+    let v=Number(x.Revenue)||0;
     rev+=v;
-    p[x.Product]=(p[x.Product]||0)+v;
-    r[x.Region]=(r[x.Region]||0)+v;
-    d[x.Date]=(d[x.Date]||0)+v;
+
+    let product=clean(x.Product,"Unassigned Product");
+    let region=clean(x.Region,"Unassigned Region");
+    let date=clean(x.Date,"Unknown Date");
+
+    p[product]=(p[product]||0)+v;
+    r[region]=(r[region]||0)+v;
+    d[date]=(d[date]||0)+v;
+
+    rows.push(x);
   });
 
   let top=Object.keys(p).reduce((a,b)=>p[a]>p[b]?a:b,"-");
 
   document.getElementById('rev').innerText="$"+rev.toLocaleString();
-  document.getElementById('ord').innerText=data.length;
+  document.getElementById('ord').innerText=rows.length;
   document.getElementById('top').innerText=top;
-  document.getElementById('avg').innerText="$"+(rev/(data.length||1)).toFixed(2);
+  document.getElementById('avg').innerText="$"+(rev/(rows.length||1)).toFixed(2);
 
-  document.getElementById('insight').innerText=
-    `Insight: ${top} is leading revenue. Total revenue: $${rev.toLocaleString()}`;
-
-  renderTable(data);
+  renderTable(rows);
   renderCharts(p,r,d);
 }
 
@@ -282,56 +231,61 @@ function renderTable(data){
         <td>${r.Product}</td>
         <td>${r.Region}</td>
         <td>${r.Revenue}</td>
-      </tr>`).join('');
+      </tr>
+    `).join('');
 }
 
-/* CHARTS (FIXED ALIGNMENT) */
+/* CHARTS */
 function renderCharts(p,r,d){
 
   charts.forEach(c=>c.destroy());
   charts=[];
 
-  const baseOptions = {
+  const base = {
     responsive:true,
-    maintainAspectRatio:false,
-
-    layout:{
-      padding:{left:10,right:10,top:10,bottom:10}
-    },
-
-    scales:{
-      x:{
-        offset:true,
-        ticks:{align:"center"}
-      },
-      y:{
-        beginAtZero:true
-      }
-    }
+    maintainAspectRatio:false
   };
 
+  /* BAR */
   charts.push(new Chart(c1,{
     type:'bar',
-    data:{labels:Object.keys(p),datasets:[{data:Object.values(p)}]},
-    options:baseOptions
+    data:{
+      labels:Object.keys(p),
+      datasets:[{data:Object.values(p)}]
+    },
+    options:base
   }));
 
+  /* PIE */
   charts.push(new Chart(c2,{
     type:'pie',
-    data:{labels:Object.keys(r),datasets:[{data:Object.values(r)}]},
-    options:baseOptions
+    data:{
+      labels:Object.keys(r),
+      datasets:[{data:Object.values(r)}]
+    },
+    options:base
   }));
+
+  /* LINE (FIXED DATE ORDER) */
+  const sortedDates = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
 
   charts.push(new Chart(c3,{
     type:'line',
-    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
-    options:baseOptions
+    data:{
+      labels:sortedDates,
+      datasets:[{data:sortedDates.map(k=>d[k])}]
+    },
+    options:base
   }));
 
+  /* BAR */
   charts.push(new Chart(c4,{
     type:'bar',
-    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
-    options:baseOptions
+    data:{
+      labels:Object.keys(d),
+      datasets:[{data:Object.values(d)}]
+    },
+    options:base
   }));
 }
 
