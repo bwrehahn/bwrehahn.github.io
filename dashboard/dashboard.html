@@ -57,6 +57,28 @@ button:hover{
   opacity:.85;
 }
 
+/* FILTER BAR (NEW) */
+.filterBar{
+  display:flex;
+  gap:8px;
+  padding:10px 15px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.filterChip{
+  background:var(--card);
+  border:1px solid #2a3550;
+  padding:6px 10px;
+  border-radius:20px;
+  font-size:12px;
+  cursor:pointer;
+}
+
+.filterChip:hover{
+  opacity:.8;
+}
+
 /* KPI */
 .kpis{
   display:grid;
@@ -129,8 +151,14 @@ td{
   <div class="actions">
     <input type="file" id="file">
     <button onclick="toggleTheme()">🌙 Theme</button>
+    <button onclick="clearFilters()">Reset Filters</button>
     <button onclick="exportCSV()">Export CSV</button>
   </div>
+</div>
+
+<!-- FILTER BAR (NEW) -->
+<div class="filterBar" id="filterBar">
+  <span style="color:var(--muted);font-size:12px;">Active filters:</span>
 </div>
 
 <div class="kpis">
@@ -160,7 +188,9 @@ td{
 
 let raw=[];
 let charts=[];
-let activeFilter = null;   // ✅ RESTORED INTERACTIVITY STATE
+
+// supports MULTI FILTERS (NEW)
+let activeFilters = [];
 
 function toggleTheme(){
   document.body.classList.toggle("light");
@@ -191,8 +221,60 @@ function parseExcelDate(v){
   return s;
 }
 
+/* FILTER UI */
+function renderFilterBar(){
+  const bar = document.getElementById("filterBar");
+
+  const chips = activeFilters.map((f,i)=>`
+    <div class="filterChip" onclick="removeFilter(${i})">
+      ${f.field}: ${f.value} ✕
+    </div>
+  `).join("");
+
+  bar.innerHTML = `
+    <span style="color:var(--muted);font-size:12px;">Active filters:</span>
+    ${chips || "<span style='color:var(--muted)'>None</span>"}
+  `;
+}
+
+function removeFilter(index){
+  activeFilters.splice(index,1);
+  render();
+}
+
+function clearFilters(){
+  activeFilters = [];
+  render();
+}
+
+/* FILTER ENGINE */
+function applyFilter(field, value){
+
+  // toggle off same filter
+  const existing = activeFilters.findIndex(f => f.field === field && f.value === value);
+
+  if(existing !== -1){
+    activeFilters.splice(existing,1);
+  } else {
+    activeFilters.push({field,value});
+  }
+
+  render();
+}
+
+/* APPLY FILTERS TO DATA */
+function getFilteredData(){
+  let data = raw;
+
+  activeFilters.forEach(f=>{
+    data = data.filter(r => r[f.field] === f.value);
+  });
+
+  return data;
+}
+
 /* TABLE */
-function renderTable(data=raw){
+function renderTable(data){
   document.getElementById('table').innerHTML =
     data.map(r=>`
       <tr>
@@ -202,24 +284,6 @@ function renderTable(data=raw){
         <td>${r.Revenue}</td>
       </tr>
     `).join('');
-}
-
-/* FILTER ENGINE (TOGGLE + MULTI RESET) */
-function applyFilter(field, value){
-
-  const key = field + ":" + value;
-
-  // toggle off
-  if(activeFilter === key){
-    activeFilter = null;
-    render();
-    return;
-  }
-
-  activeFilter = key;
-
-  const filtered = raw.filter(r => r[field] === value);
-  render(filtered);
 }
 
 /* LOAD */
@@ -243,12 +307,14 @@ document.getElementById('file').onchange=e=>{
   reader.readAsArrayBuffer(e.target.files[0]);
 };
 
-function render(data=raw){
+function render(){
+
+  const data = getFilteredData();
 
   let p={},r={},d={};
   let totalRevenue=0;
 
-  (data||raw).forEach(x=>{
+  data.forEach(x=>{
     let v=x.Revenue||0;
     totalRevenue+=v;
 
@@ -276,15 +342,16 @@ function render(data=raw){
   }
 
   document.getElementById("kpiRevenue").innerText = "$" + totalRevenue.toLocaleString();
-  document.getElementById("kpiOrders").innerText = (data||raw).length;
-  document.getElementById("kpiAvg").innerText = "$" + (totalRevenue/((data||raw).length||1)).toFixed(2);
+  document.getElementById("kpiOrders").innerText = data.length;
+  document.getElementById("kpiAvg").innerText = "$" + (totalRevenue/(data.length||1)).toFixed(2);
 
   document.getElementById("kpiTrend").innerHTML =
     `<span style="color:${color}">
       ${arrow} ${pct.toFixed(2)}%
     </span>`;
 
-  renderTable(data||raw);
+  renderFilterBar();          // NEW
+  renderTable(data);
   renderCharts(p,r,d);
 }
 
@@ -309,9 +376,9 @@ function renderCharts(p,r,d){
       responsive:true,
       maintainAspectRatio:false,
       plugins:{title:{display:true,text:"Revenue by Product"}},
-      onClick:(evt,elements)=>{
-        if(!elements.length) return;
-        applyFilter("Product", pLabels[elements[0].index]);
+      onClick:(evt,e)=>{
+        if(!e.length) return;
+        applyFilter("Product", pLabels[e[0].index]);
       }
     }
   }));
@@ -323,9 +390,9 @@ function renderCharts(p,r,d){
       responsive:true,
       maintainAspectRatio:false,
       plugins:{title:{display:true,text:"Revenue by Region"}},
-      onClick:(evt,elements)=>{
-        if(!elements.length) return;
-        applyFilter("Region", rLabels[elements[0].index]);
+      onClick:(evt,e)=>{
+        if(!e.length) return;
+        applyFilter("Region", rLabels[e[0].index]);
       }
     }
   }));
@@ -337,9 +404,9 @@ function renderCharts(p,r,d){
       responsive:true,
       maintainAspectRatio:false,
       plugins:{title:{display:true,text:"Revenue Over Time"}},
-      onClick:(evt,elements)=>{
-        if(!elements.length) return;
-        applyFilter("Date", dLabels[elements[0].index]);
+      onClick:(evt,e)=>{
+        if(!e.length) return;
+        applyFilter("Date", dLabels[e[0].index]);
       }
     }
   }));
@@ -351,9 +418,9 @@ function renderCharts(p,r,d){
       responsive:true,
       maintainAspectRatio:false,
       plugins:{title:{display:true,text:"Daily Revenue"}},
-      onClick:(evt,elements)=>{
-        if(!elements.length) return;
-        applyFilter("Date", dLabels[elements[0].index]);
+      onClick:(evt,e)=>{
+        if(!e.length) return;
+        applyFilter("Date", dLabels[e[0].index]);
       }
     }
   }));
