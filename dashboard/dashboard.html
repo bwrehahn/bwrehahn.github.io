@@ -369,13 +369,22 @@ function renderCharts(p,r,d){
   const dLabels = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
   const dValues = dLabels.map(k=>d[k]);
 
+  const money = (v)=>"$" + Number(v).toLocaleString();
+
   charts.push(new Chart(c1,{
     type:'bar',
     data:{labels:pLabels,datasets:[{label:"Revenue",data:pValues}]},
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      plugins:{title:{display:true,text:"Revenue by Product"}},
+      plugins:{
+        title:{display:true,text:"Revenue by Product"},
+        tooltip:{
+          callbacks:{
+            label:(ctx)=> `Revenue: ${money(ctx.raw)}`
+          }
+        }
+      },
       onClick:(evt,e)=>{
         if(!e.length) return;
         applyFilter("Product", pLabels[e[0].index]);
@@ -389,7 +398,14 @@ function renderCharts(p,r,d){
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      plugins:{title:{display:true,text:"Revenue by Region"}},
+      plugins:{
+        title:{display:true,text:"Revenue by Region"},
+        tooltip:{
+          callbacks:{
+            label:(ctx)=> `${ctx.label}: ${money(ctx.raw)}`
+          }
+        }
+      },
       onClick:(evt,e)=>{
         if(!e.length) return;
         applyFilter("Region", rLabels[e[0].index]);
@@ -403,7 +419,14 @@ function renderCharts(p,r,d){
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      plugins:{title:{display:true,text:"Revenue Over Time"}},
+      plugins:{
+        title:{display:true,text:"Revenue Over Time"},
+        tooltip:{
+          callbacks:{
+            label:(ctx)=> `Revenue: ${money(ctx.raw)}`
+          }
+        }
+      },
       onClick:(evt,e)=>{
         if(!e.length) return;
         applyFilter("Date", dLabels[e[0].index]);
@@ -417,7 +440,14 @@ function renderCharts(p,r,d){
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      plugins:{title:{display:true,text:"Daily Revenue"}},
+      plugins:{
+        title:{display:true,text:"Daily Revenue"},
+        tooltip:{
+          callbacks:{
+            label:(ctx)=> `Revenue: ${money(ctx.raw)}`
+          }
+        }
+      },
       onClick:(evt,e)=>{
         if(!e.length) return;
         applyFilter("Date", dLabels[e[0].index]);
@@ -425,7 +455,6 @@ function renderCharts(p,r,d){
     }
   }));
 }
-
 function exportCSV(){
   let csv="Date,Product,Region,Revenue\n";
   raw.forEach(r=>{
