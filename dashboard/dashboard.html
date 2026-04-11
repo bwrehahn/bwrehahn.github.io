@@ -57,7 +57,6 @@ button:hover{
   opacity:.85;
 }
 
-/* KPI */
 .kpis{
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -160,6 +159,7 @@ td{
 
 let raw=[];
 let charts=[];
+let drillState = null;
 
 function toggleTheme(){
   document.body.classList.toggle("light");
@@ -188,6 +188,43 @@ function parseExcelDate(v){
   }
 
   return s;
+}
+
+/* RESET TABLE */
+function renderFullTable(){
+  document.getElementById('table').innerHTML =
+    raw.map(r=>`
+      <tr>
+        <td>${r.Date}</td>
+        <td>${r.Product}</td>
+        <td>${r.Region}</td>
+        <td>${r.Revenue}</td>
+      </tr>
+    `).join('');
+}
+
+/* DRILL DOWN */
+function drill(field, value){
+
+  if(drillState && drillState.field === field && drillState.value === value){
+    drillState = null;
+    renderFullTable();
+    return;
+  }
+
+  drillState = {field, value};
+
+  const filtered = raw.filter(r => r[field] === value);
+
+  document.getElementById('table').innerHTML =
+    filtered.map(r=>`
+      <tr>
+        <td>${r.Date}</td>
+        <td>${r.Product}</td>
+        <td>${r.Region}</td>
+        <td>${r.Revenue}</td>
+      </tr>
+    `).join('');
 }
 
 /* LOAD */
@@ -252,20 +289,8 @@ function render(){
       ${arrow} ${pct.toFixed(2)}%
     </span>`;
 
-  renderTable();
+  renderFullTable();
   renderCharts(p,r,d);
-}
-
-function renderTable(){
-  document.getElementById('table').innerHTML =
-    raw.map(r=>`
-      <tr>
-        <td>${r.Date}</td>
-        <td>${r.Product}</td>
-        <td>${r.Region}</td>
-        <td>${r.Revenue}</td>
-      </tr>
-    `).join('');
 }
 
 function renderCharts(p,r,d){
@@ -288,8 +313,10 @@ function renderCharts(p,r,d){
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      plugins:{
-        title:{display:true,text:"Revenue by Product"}
+      plugins:{title:{display:true,text:"Revenue by Product"}},
+      onClick:(evt,elements)=>{
+        if(!elements.length) return;
+        drill("Product", pLabels[elements[0].index]);
       }
     }
   }));
@@ -300,8 +327,10 @@ function renderCharts(p,r,d){
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      plugins:{
-        title:{display:true,text:"Revenue by Region"}
+      plugins:{title:{display:true,text:"Revenue by Region"}},
+      onClick:(evt,elements)=>{
+        if(!elements.length) return;
+        drill("Region", rLabels[elements[0].index]);
       }
     }
   }));
@@ -312,8 +341,10 @@ function renderCharts(p,r,d){
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      plugins:{
-        title:{display:true,text:"Revenue Over Time"}
+      plugins:{title:{display:true,text:"Revenue Over Time"}},
+      onClick:(evt,elements)=>{
+        if(!elements.length) return;
+        drill("Date", dLabels[elements[0].index]);
       }
     }
   }));
@@ -324,8 +355,10 @@ function renderCharts(p,r,d){
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      plugins:{
-        title:{display:true,text:"Daily Revenue"}
+      plugins:{title:{display:true,text:"Daily Revenue"}},
+      onClick:(evt,elements)=>{
+        if(!elements.length) return;
+        drill("Date", dLabels[elements[0].index]);
       }
     }
   }));
