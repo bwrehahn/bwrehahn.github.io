@@ -51,6 +51,10 @@ button{
   cursor:pointer;
 }
 
+button:hover{
+  opacity:.85;
+}
+
 .grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -70,17 +74,28 @@ canvas{
   height:100%!important;
 }
 
+/* ✅ TABLE FIX */
 table{
   width:calc(100% - 30px);
   margin:15px;
   background:var(--card);
   border-collapse:collapse;
+  border-radius:12px;
+  overflow:hidden;
 }
 
-td,th{
-  padding:8px;
+th{
+  text-align:left;
+  padding:10px;
+  color:var(--muted);
+  font-weight:600;
+}
+
+td{
+  text-align:left;
+  padding:10px;
+  opacity:0.9;
   border-bottom:1px solid #1f2a44;
-  color:var(--text);
 }
 </style>
 </head>
@@ -123,41 +138,40 @@ function toggleTheme(){
   document.body.classList.toggle("light");
 }
 
-/* ✅ REAL EXCEL DATE FIX (IMPORTANT PART) */
+/* ✅ DATE FORMAT FIX (mm/dd/yyyy) */
 function parseExcelDate(v){
 
-  if(v === null || v === undefined) return null;
+  if(v === null || v === undefined) return "";
 
-  // Excel serial number
   if(typeof v === "number"){
-    const date = XLSX.SSF.parse_date_code(v);
-    if(!date) return null;
-    return `${date.y}-${String(date.m).padStart(2,'0')}-${String(date.d).padStart(2,'0')}`;
+    const d = XLSX.SSF.parse_date_code(v);
+    if(!d) return "";
+    return `${String(d.m).padStart(2,'0')}/${String(d.d).padStart(2,'0')}/${d.y}`;
   }
 
-  // already string
   let s = String(v).trim();
+  if(!s || s.toLowerCase()==="undefined") return "";
 
-  if(!s || s.toLowerCase()==="undefined") return null;
-
-  // try native parse fallback
   const d = new Date(s);
   if(!isNaN(d.getTime())){
-    return d.toISOString().split("T")[0];
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    const yyyy = d.getFullYear();
+    return `${mm}/${dd}/${yyyy}`;
   }
 
   return s;
 }
 
-/* LOAD FILE */
+/* FILE LOAD */
 document.getElementById('file').onchange=e=>{
   const reader=new FileReader();
 
   reader.onload=ev=>{
     const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
-    const sheet=wb.Sheets[wb.SheetNames[0]];
+    const sh=wb.Sheets[wb.SheetNames[0]];
 
-    raw=XLSX.utils.sheet_to_json(sheet,{defval:""}).map(r=>({
+    raw=XLSX.utils.sheet_to_json(sh,{defval:""}).map(r=>({
       Date: parseExcelDate(r.Date),
       Product: r.Product,
       Region: r.Region,
@@ -189,7 +203,7 @@ function render(){
 
 /* TABLE */
 function renderTable(){
-  document.getElementById('table').innerHTML=
+  document.getElementById('table').innerHTML =
     raw.map(r=>`
       <tr>
         <td>${r.Date}</td>
@@ -218,14 +232,13 @@ function renderCharts(p,r,d){
     options:{responsive:true,maintainAspectRatio:false}
   }));
 
-  /* ✅ FIXED TIME SERIES */
-  const sorted = Object.keys(d).sort();
+  const sortedDates = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
 
   charts.push(new Chart(c3,{
     type:'line',
     data:{
-      labels: sorted,
-      datasets:[{data: sorted.map(k=>d[k])}]
+      labels: sortedDates,
+      datasets:[{data: sortedDates.map(k=>d[k])}]
     },
     options:{responsive:true,maintainAspectRatio:false}
   }));
@@ -243,6 +256,7 @@ function exportCSV(){
   raw.forEach(r=>{
     csv+=`${r.Date},${r.Product},${r.Region},${r.Revenue}\n`;
   });
+
   const blob=new Blob([csv],{type:"text/csv"});
   const a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
