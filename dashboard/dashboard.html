@@ -2,27 +2,78 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Clean Stable Dashboard</title>
+<title>Senior SaaS Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
+:root{
+  --bg:#0b1220;
+  --card:#111c33;
+  --text:#e5e7eb;
+  --muted:#94a3b8;
+}
+
+/* LIGHT MODE */
+body.light{
+  --bg:#f4f6f8;
+  --card:#ffffff;
+  --text:#111;
+  --muted:#555;
+}
+
 body{
   margin:0;
   font-family:Arial;
-  background:#0b1220;
-  color:#e5e7eb;
+  background:var(--bg);
+  color:var(--text);
 }
 
+/* HEADER */
 .header{
-  padding:15px;
-  border-bottom:1px solid #1f2a44;
   display:flex;
   justify-content:space-between;
+  padding:15px;
+  border-bottom:1px solid #1f2a44;
   align-items:center;
 }
 
+.actions{
+  display:flex;
+  gap:10px;
+}
+
+button{
+  background:var(--card);
+  color:var(--text);
+  border:none;
+  padding:6px 10px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+button:hover{
+  opacity:.85;
+}
+
+/* CHIPS */
+.chips{
+  display:flex;
+  gap:8px;
+  padding:10px 15px;
+  flex-wrap:wrap;
+}
+
+.chip{
+  background:var(--card);
+  padding:6px 10px;
+  border-radius:20px;
+  font-size:12px;
+  cursor:pointer;
+}
+
+/* KPI */
 .kpis{
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -31,172 +82,265 @@ body{
 }
 
 .kpi{
-  background:#111c33;
-  padding:12px;
-  border-radius:10px;
+  background:var(--card);
+  padding:15px;
+  border-radius:12px;
 }
 
+.kpi h4{
+  margin:0;
+  font-size:12px;
+  color:var(--muted);
+}
+
+.kpi p{
+  font-size:20px;
+  margin:8px 0 0;
+}
+
+/* INSIGHT */
+.insight{
+  margin:0 15px 15px;
+  padding:12px;
+  background:var(--card);
+  border-radius:12px;
+  color:var(--muted);
+}
+
+/* CHART GRID (FIXED) */
 .grid{
   display:grid;
-  grid-template-columns:repeat(2,1fr);
+  grid-template-columns:repeat(2, minmax(0, 1fr));
   gap:15px;
   padding:15px;
 }
 
-.card{
-  background:#111c33;
+.box{
+  background:var(--card);
   border-radius:12px;
-  padding:10px;
+  padding:12px;
   height:320px;
+  position:relative;
 }
 
-/* FIXED CHART SIZE */
+/* FIX: prevents squished charts */
 canvas{
-  width:100% !important;
-  height:300px !important;
+  width:100%!important;
+  height:100%!important;
+}
+
+/* TABLE */
+table{
+  width:calc(100% - 30px);
+  margin:15px;
+  border-collapse:collapse;
+  background:var(--card);
+  border-radius:12px;
+  overflow:hidden;
+}
+
+td,th{
+  padding:8px;
+  border-bottom:1px solid #1f2a44;
+}
+
+th{
+  color:var(--muted);
+  cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
+<!-- HEADER -->
 <div class="header">
-  <b>Stable Excel Dashboard (FINAL)</b>
-  <input type="file" id="file">
+  <div><b>Senior Analytics Dashboard</b></div>
+
+  <div class="actions">
+    <input type="file" id="file">
+    <button onclick="exportCSV()">Export CSV</button>
+    <button onclick="toggleTheme()">🌙 Theme</button>
+  </div>
 </div>
 
+<!-- FILTER CHIPS -->
+<div class="chips" id="chips"></div>
+
+<!-- KPI -->
 <div class="kpis">
-  <div class="kpi"><div>Revenue</div><div id="rev">$0</div></div>
-  <div class="kpi"><div>Orders</div><div id="ord">0</div></div>
-  <div class="kpi"><div>Top Product</div><div id="top">-</div></div>
-  <div class="kpi"><div>Avg Order</div><div id="avg">$0</div></div>
+  <div class="kpi"><h4>Revenue</h4><p id="rev">$0</p></div>
+  <div class="kpi"><h4>Orders</h4><p id="ord">0</p></div>
+  <div class="kpi"><h4>Top Product</h4><p id="top">-</p></div>
+  <div class="kpi"><h4>Avg Order</h4><p id="avg">$0</p></div>
 </div>
 
+<!-- INSIGHT -->
+<div class="insight" id="insight">Upload file to begin analysis...</div>
+
+<!-- CHARTS -->
 <div class="grid">
-  <div class="card"><canvas id="c1"></canvas></div>
-  <div class="card"><canvas id="c2"></canvas></div>
-  <div class="card"><canvas id="c3"></canvas></div>
-  <div class="card"><canvas id="c4"></canvas></div>
+  <div class="box"><canvas id="c1"></canvas></div>
+  <div class="box"><canvas id="c2"></canvas></div>
+  <div class="box"><canvas id="c3"></canvas></div>
+  <div class="box"><canvas id="c4"></canvas></div>
 </div>
+
+<!-- TABLE -->
+<table>
+<thead>
+<tr>
+<th>Date</th><th>Product</th><th>Region</th><th>Revenue</th>
+</tr>
+</thead>
+<tbody id="table"></tbody>
+</table>
 
 <script>
 
 let raw=[];
+let filters={product:null,region:null};
 let charts=[];
 
-/* LOAD EXCEL (POSITION-BASED PARSER = BULLETPROOF) */
-document.getElementById("file").addEventListener("change", e=>{
-  let file=e.target.files[0];
-  let reader=new FileReader();
-
-  reader.onload=ev=>{
-    let wb=XLSX.read(ev.target.result,{type:"binary"});
-    let sheet=wb.Sheets[wb.SheetNames[0]];
-
-    let json=XLSX.utils.sheet_to_json(sheet,{
-      header:1,
-      defval:""
-    });
-
-    if(!json.length){
-      alert("Empty Excel file");
-      return;
-    }
-
-    let headers=json[0].map(h=>String(h).trim().toLowerCase());
-
-    raw=json.slice(1).map(row=>{
-      let obj={};
-
-      headers.forEach((h,i)=>{
-        obj[h]=row[i];
-      });
-
-      return {
-        Product: obj.product || "",
-        Region: obj.region || "",
-        Date: obj.date || "",
-        Revenue: Number(obj.revenue) || 0
-      };
-    }).filter(r=>r.Product && r.Region && r.Date);
-
-    render();
-  };
-
-  reader.readAsBinaryString(file);
-});
-
-/* GROUP DATA SAFELY */
-function group(field){
-  let map=new Map();
-
-  raw.forEach(r=>{
-    let key=r[field];
-    if(!key || key==="undefined") return;
-
-    map.set(key,(map.get(key)||0)+r.Revenue);
-  });
-
-  return {
-    labels:[...map.keys()],
-    values:[...map.values()]
-  };
+/* THEME TOGGLE */
+function toggleTheme(){
+  document.body.classList.toggle("light");
 }
 
-/* RENDER DASHBOARD */
+/* FILE LOAD */
+document.getElementById('file').onchange=e=>{
+  let r=new FileReader();
+  r.onload=ev=>{
+    let wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+    let sh=wb.Sheets[wb.SheetNames[0]];
+    raw=XLSX.utils.sheet_to_json(sh);
+    render();
+  };
+  r.readAsArrayBuffer(e.target.files[0]);
+};
+
+/* FILTER */
+function setFilter(type,value){
+  filters[type]=value;
+  render();
+}
+
+function clearFilter(type){
+  filters[type]=null;
+  render();
+}
+
+/* EXPORT */
+function exportCSV(){
+  let csv="Date,Product,Region,Revenue\n";
+  raw.forEach(r=>{
+    csv+=`${r.Date},${r.Product},${r.Region},${r.Revenue}\n`;
+  });
+  let blob=new Blob([csv],{type:"text/csv"});
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="data.csv";
+  a.click();
+}
+
+/* RENDER */
 function render(){
 
-  let total=0;
-  let p={},r={},d={};
+  let data=raw.filter(r=>{
+    return (!filters.product||r.Product===filters.product)&&
+           (!filters.region||r.Region===filters.region);
+  });
 
-  raw.forEach(x=>{
-    total+=x.Revenue;
+  let rev=0,p={},r={},d={};
 
-    p[x.Product]=(p[x.Product]||0)+x.Revenue;
-    r[x.Region]=(r[x.Region]||0)+x.Revenue;
-    d[x.Date]=(d[x.Date]||0)+x.Revenue;
+  data.forEach(x=>{
+    let v=+x.Revenue||0;
+    rev+=v;
+    p[x.Product]=(p[x.Product]||0)+v;
+    r[x.Region]=(r[x.Region]||0)+v;
+    d[x.Date]=(d[x.Date]||0)+v;
   });
 
   let top=Object.keys(p).reduce((a,b)=>p[a]>p[b]?a:b,"-");
 
-  document.getElementById("rev").innerText="$"+total.toLocaleString();
-  document.getElementById("ord").innerText=raw.length;
-  document.getElementById("top").innerText=top;
-  document.getElementById("avg").innerText="$"+(total/(raw.length||1)).toFixed(2);
+  document.getElementById('rev').innerText="$"+rev.toLocaleString();
+  document.getElementById('ord').innerText=data.length;
+  document.getElementById('top').innerText=top;
+  document.getElementById('avg').innerText="$"+(rev/(data.length||1)).toFixed(2);
 
-  drawCharts();
+  document.getElementById('insight').innerText=
+    `Insight: ${top} is leading revenue. Total revenue: $${rev.toLocaleString()}`;
+
+  renderChips();
+  renderTable(data);
+  renderCharts(p,r,d);
 }
 
-/* CHARTS (CLEAN + STABLE) */
-function drawCharts(){
+/* CHIPS */
+function renderChips(){
+  let c=document.getElementById('chips');
+  c.innerHTML="";
+
+  if(filters.product)
+    c.innerHTML+=`<div class="chip" onclick="clearFilter('product')">Product: ${filters.product} ✕</div>`;
+
+  if(filters.region)
+    c.innerHTML+=`<div class="chip" onclick="clearFilter('region')">Region: ${filters.region} ✕</div>`;
+}
+
+/* TABLE */
+function renderTable(data){
+  document.getElementById('table').innerHTML=
+    data.map(r=>`
+      <tr>
+        <td>${r.Date}</td>
+        <td>${r.Product}</td>
+        <td>${r.Region}</td>
+        <td>${r.Revenue}</td>
+      </tr>`).join('');
+}
+
+/* CHARTS + DRILLDOWN */
+function renderCharts(p,r,d){
 
   charts.forEach(c=>c.destroy());
   charts=[];
 
-  let p=group("Product");
-  let r=group("Region");
-  let d=group("Date");
-
   charts.push(new Chart(c1,{
-    type:"bar",
-    data:{labels:p.labels,datasets:[{data:p.values}]}
+    type:'bar',
+    data:{labels:Object.keys(p),datasets:[{data:Object.values(p)}]},
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      onClick:(e,i)=>{
+        if(i.length)setFilter('product',Object.keys(p)[i[0].index]);
+      }
+    }
   }));
 
   charts.push(new Chart(c2,{
-    type:"pie",
-    data:{labels:r.labels,datasets:[{data:r.values}]}
+    type:'pie',
+    data:{labels:Object.keys(r),datasets:[{data:Object.values(r)}]},
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      onClick:(e,i)=>{
+        if(i.length)setFilter('region',Object.keys(r)[i[0].index]);
+      }
+    }
   }));
 
   charts.push(new Chart(c3,{
-    type:"line",
-    data:{labels:d.labels,datasets:[{data:d.values}]}
+    type:'line',
+    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
+    options:{responsive:true,maintainAspectRatio:false}
   }));
 
   charts.push(new Chart(c4,{
-    type:"bar",
-    data:{labels:d.labels,datasets:[{data:d.values}]}
+    type:'bar',
+    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
+    options:{responsive:true,maintainAspectRatio:false}
   }));
-
 }
 
 </script>
