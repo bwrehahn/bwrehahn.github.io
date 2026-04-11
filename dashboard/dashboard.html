@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Senior SaaS Dashboard</title>
+<title>Senior SaaS Dashboard (Fixed)</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -15,7 +15,6 @@
   --muted:#94a3b8;
 }
 
-/* LIGHT MODE */
 body.light{
   --bg:#f4f6f8;
   --card:#ffffff;
@@ -30,7 +29,6 @@ body{
   color:var(--text);
 }
 
-/* HEADER */
 .header{
   display:flex;
   justify-content:space-between;
@@ -39,10 +37,7 @@ body{
   align-items:center;
 }
 
-.actions{
-  display:flex;
-  gap:10px;
-}
+.actions{display:flex;gap:10px;}
 
 button{
   background:var(--card);
@@ -53,11 +48,6 @@ button{
   cursor:pointer;
 }
 
-button:hover{
-  opacity:.85;
-}
-
-/* CHIPS */
 .chips{
   display:flex;
   gap:8px;
@@ -73,7 +63,6 @@ button:hover{
   cursor:pointer;
 }
 
-/* KPI */
 .kpis{
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -87,18 +76,9 @@ button:hover{
   border-radius:12px;
 }
 
-.kpi h4{
-  margin:0;
-  font-size:12px;
-  color:var(--muted);
-}
+.kpi h4{margin:0;font-size:12px;color:var(--muted);}
+.kpi p{margin:8px 0 0;font-size:20px;}
 
-.kpi p{
-  font-size:20px;
-  margin:8px 0 0;
-}
-
-/* INSIGHT */
 .insight{
   margin:0 15px 15px;
   padding:12px;
@@ -107,10 +87,9 @@ button:hover{
   color:var(--muted);
 }
 
-/* CHART GRID (FIXED) */
 .grid{
   display:grid;
-  grid-template-columns:repeat(2, minmax(0, 1fr));
+  grid-template-columns:repeat(2,1fr);
   gap:15px;
   padding:15px;
 }
@@ -120,16 +99,13 @@ button:hover{
   border-radius:12px;
   padding:12px;
   height:320px;
-  position:relative;
 }
 
-/* FIX: prevents squished charts */
 canvas{
   width:100%!important;
   height:100%!important;
 }
 
-/* TABLE */
 table{
   width:calc(100% - 30px);
   margin:15px;
@@ -144,30 +120,22 @@ td,th{
   border-bottom:1px solid #1f2a44;
 }
 
-th{
-  color:var(--muted);
-  cursor:pointer;
-}
+th{color:var(--muted);}
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <div class="header">
-  <div><b>Senior Analytics Dashboard</b></div>
-
+  <div><b>Senior Analytics Dashboard (Fixed)</b></div>
   <div class="actions">
     <input type="file" id="file">
-    <button onclick="exportCSV()">Export CSV</button>
     <button onclick="toggleTheme()">🌙 Theme</button>
   </div>
 </div>
 
-<!-- FILTER CHIPS -->
 <div class="chips" id="chips"></div>
 
-<!-- KPI -->
 <div class="kpis">
   <div class="kpi"><h4>Revenue</h4><p id="rev">$0</p></div>
   <div class="kpi"><h4>Orders</h4><p id="ord">0</p></div>
@@ -175,10 +143,8 @@ th{
   <div class="kpi"><h4>Avg Order</h4><p id="avg">$0</p></div>
 </div>
 
-<!-- INSIGHT -->
-<div class="insight" id="insight">Upload file to begin analysis...</div>
+<div class="insight" id="insight">Upload file to begin...</div>
 
-<!-- CHARTS -->
 <div class="grid">
   <div class="box"><canvas id="c1"></canvas></div>
   <div class="box"><canvas id="c2"></canvas></div>
@@ -186,12 +152,9 @@ th{
   <div class="box"><canvas id="c4"></canvas></div>
 </div>
 
-<!-- TABLE -->
 <table>
 <thead>
-<tr>
-<th>Date</th><th>Product</th><th>Region</th><th>Revenue</th>
-</tr>
+<tr><th>Date</th><th>Product</th><th>Region</th><th>Revenue</th></tr>
 </thead>
 <tbody id="table"></tbody>
 </table>
@@ -202,21 +165,54 @@ let raw=[];
 let filters={product:null,region:null};
 let charts=[];
 
-/* THEME TOGGLE */
+/* THEME */
 function toggleTheme(){
   document.body.classList.toggle("light");
 }
 
+/* FIX: Excel date conversion */
+function fixDate(v){
+  if(typeof v === "number"){
+    const d = XLSX.SSF.parse_date_code(v);
+    if(!d) return v;
+    return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+  }
+  return v;
+}
+
 /* FILE LOAD */
-document.getElementById('file').onchange=e=>{
-  let r=new FileReader();
-  r.onload=ev=>{
-    let wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
-    let sh=wb.Sheets[wb.SheetNames[0]];
-    raw=XLSX.utils.sheet_to_json(sh);
+document.getElementById("file").onchange=e=>{
+  const reader=new FileReader();
+
+  reader.onload=ev=>{
+    const wb=XLSX.read(new Uint8Array(ev.target.result),{type:"array"});
+    const sh=wb.Sheets[wb.SheetNames[0]];
+
+    const json=XLSX.utils.sheet_to_json(sh,{
+      defval:"",
+      raw:false
+    });
+
+    raw=json.map(r=>{
+
+      let clean={Product:"",Region:"",Date:"",Revenue:0};
+
+      Object.keys(r).forEach(k=>{
+        let key=k.trim().toLowerCase();
+
+        if(key.includes("product")) clean.Product=r[k];
+        if(key.includes("region")) clean.Region=r[k];
+        if(key.includes("date")) clean.Date=fixDate(r[k]);
+        if(key.includes("revenue")) clean.Revenue=Number(r[k])||0;
+      });
+
+      return clean;
+    }).filter(r=>r.Product && r.Region && r.Date);
+
     render();
   };
-  r.readAsArrayBuffer(e.target.files[0]);
+
+  reader.readAsArrayBuffer(e.target.files[0]);
 };
 
 /* FILTER */
@@ -230,17 +226,21 @@ function clearFilter(type){
   render();
 }
 
-/* EXPORT */
-function exportCSV(){
-  let csv="Date,Product,Region,Revenue\n";
-  raw.forEach(r=>{
-    csv+=`${r.Date},${r.Product},${r.Region},${r.Revenue}\n`;
+/* SAFE GROUP (NO undefined EVER) */
+function group(data,key){
+  let map=new Map();
+
+  data.forEach(r=>{
+    let k=r[key];
+    if(!k || k==="undefined") return;
+
+    map.set(k,(map.get(k)||0)+r.Revenue);
   });
-  let blob=new Blob([csv],{type:"text/csv"});
-  let a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="data.csv";
-  a.click();
+
+  return {
+    labels:[...map.keys()],
+    values:[...map.values()]
+  };
 }
 
 /* RENDER */
@@ -254,31 +254,32 @@ function render(){
   let rev=0,p={},r={},d={};
 
   data.forEach(x=>{
-    let v=+x.Revenue||0;
+    let v=Number(x.Revenue)||0;
     rev+=v;
-    p[x.Product]=(p[x.Product]||0)+v;
-    r[x.Region]=(r[x.Region]||0)+v;
-    d[x.Date]=(d[x.Date]||0)+v;
+
+    if(x.Product) p[x.Product]=(p[x.Product]||0)+v;
+    if(x.Region) r[x.Region]=(r[x.Region]||0)+v;
+    if(x.Date) d[x.Date]=(d[x.Date]||0)+v;
   });
 
   let top=Object.keys(p).reduce((a,b)=>p[a]>p[b]?a:b,"-");
 
-  document.getElementById('rev').innerText="$"+rev.toLocaleString();
-  document.getElementById('ord').innerText=data.length;
-  document.getElementById('top').innerText=top;
-  document.getElementById('avg').innerText="$"+(rev/(data.length||1)).toFixed(2);
+  document.getElementById("rev").innerText="$"+rev.toLocaleString();
+  document.getElementById("ord").innerText=data.length;
+  document.getElementById("top").innerText=top;
+  document.getElementById("avg").innerText="$"+(rev/(data.length||1)).toFixed(2);
 
-  document.getElementById('insight').innerText=
-    `Insight: ${top} is leading revenue. Total revenue: $${rev.toLocaleString()}`;
+  document.getElementById("insight").innerText=
+    `Insight: ${top} leads revenue with $${rev.toLocaleString()}`;
 
-  renderChips();
   renderTable(data);
+  renderChips();
   renderCharts(p,r,d);
 }
 
 /* CHIPS */
 function renderChips(){
-  let c=document.getElementById('chips');
+  let c=document.getElementById("chips");
   c.innerHTML="";
 
   if(filters.product)
@@ -290,57 +291,57 @@ function renderChips(){
 
 /* TABLE */
 function renderTable(data){
-  document.getElementById('table').innerHTML=
+  document.getElementById("table").innerHTML=
     data.map(r=>`
       <tr>
         <td>${r.Date}</td>
         <td>${r.Product}</td>
         <td>${r.Region}</td>
         <td>${r.Revenue}</td>
-      </tr>`).join('');
+      </tr>
+    `).join("");
 }
 
-/* CHARTS + DRILLDOWN */
+/* CHARTS */
 function renderCharts(p,r,d){
 
   charts.forEach(c=>c.destroy());
   charts=[];
 
+  const prod=group(dataFor(p));
+  const reg=group(dataFor(r));
+  const dat=group(dataFor(d));
+
   charts.push(new Chart(c1,{
-    type:'bar',
-    data:{labels:Object.keys(p),datasets:[{data:Object.values(p)}]},
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      onClick:(e,i)=>{
-        if(i.length)setFilter('product',Object.keys(p)[i[0].index]);
-      }
-    }
+    type:"bar",
+    data:{labels:prod.labels,datasets:[{data:prod.values}]},
+    options:{responsive:true,maintainAspectRatio:false}
   }));
 
   charts.push(new Chart(c2,{
-    type:'pie',
-    data:{labels:Object.keys(r),datasets:[{data:Object.values(r)}]},
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      onClick:(e,i)=>{
-        if(i.length)setFilter('region',Object.keys(r)[i[0].index]);
-      }
-    }
+    type:"pie",
+    data:{labels:reg.labels,datasets:[{data:reg.values}]},
+    options:{responsive:true,maintainAspectRatio:false}
   }));
 
   charts.push(new Chart(c3,{
-    type:'line',
-    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
+    type:"line",
+    data:{labels:dat.labels,datasets:[{data:dat.values}]},
     options:{responsive:true,maintainAspectRatio:false}
   }));
 
   charts.push(new Chart(c4,{
-    type:'bar',
-    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
+    type:"bar",
+    data:{labels:dat.labels,datasets:[{data:dat.values}]},
     options:{responsive:true,maintainAspectRatio:false}
   }));
+}
+
+/* SAFE TRANSFORM */
+function dataFor(obj){
+  return Object.entries(obj)
+    .filter(([k,v])=>k && k!=="undefined")
+    .map(([k,v])=>({k,v}));
 }
 
 </script>
