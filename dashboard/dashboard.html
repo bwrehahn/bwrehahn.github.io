@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Senior SaaS Dashboard (Clean Data Model)</title>
+<title>Enterprise SaaS Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -13,11 +13,13 @@
   --card:#111c33;
   --text:#e5e7eb;
   --muted:#94a3b8;
+  --good:#22c55e;
+  --bad:#ef4444;
 }
 
 body.light{
   --bg:#f4f6f8;
-  --card:#fff;
+  --card:#ffffff;
   --text:#111;
   --muted:#555;
 }
@@ -58,6 +60,25 @@ button{
   border-radius:12px;
 }
 
+.kpi h4{
+  margin:0;
+  font-size:12px;
+  color:var(--muted);
+}
+
+.kpi p{
+  margin:6px 0 0;
+  font-size:20px;
+}
+
+.trend{
+  font-size:12px;
+  margin-top:4px;
+}
+
+.good{color:var(--good);}
+.bad{color:var(--bad);}
+
 .grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -67,8 +88,8 @@ button{
 
 .box{
   background:var(--card);
-  height:320px;
   border-radius:12px;
+  height:320px;
   padding:10px;
 }
 
@@ -76,36 +97,38 @@ canvas{
   width:100%!important;
   height:100%!important;
 }
-
-table{
-  width:calc(100% - 30px);
-  margin:15px;
-  background:var(--card);
-  border-collapse:collapse;
-}
-
-td,th{
-  padding:8px;
-  border-bottom:1px solid #1f2a44;
-}
-
-th{color:var(--muted);}
 </style>
 </head>
 
 <body>
 
 <div class="header">
-  <b>Senior SaaS Dashboard</b>
+  <b>Enterprise SaaS Analytics Dashboard</b>
   <input type="file" id="file">
   <button onclick="toggleTheme()">Theme</button>
 </div>
 
 <div class="kpis">
-  <div class="kpi"><b>Revenue</b><p id="rev">$0</p></div>
-  <div class="kpi"><b>Orders</b><p id="ord">0</p></div>
-  <div class="kpi"><b>Top Product</b><p id="top">-</p></div>
-  <div class="kpi"><b>Avg</b><p id="avg">$0</p></div>
+  <div class="kpi">
+    <h4>Revenue</h4>
+    <p id="rev">$0</p>
+    <div class="trend" id="revTrend"></div>
+  </div>
+
+  <div class="kpi">
+    <h4>Orders</h4>
+    <p id="ord">0</p>
+  </div>
+
+  <div class="kpi">
+    <h4>Top Product</h4>
+    <p id="top">-</p>
+  </div>
+
+  <div class="kpi">
+    <h4>Avg Order</h4>
+    <p id="avg">$0</p>
+  </div>
 </div>
 
 <div class="grid">
@@ -115,21 +138,22 @@ th{color:var(--muted);}
   <div class="box"><canvas id="c4"></canvas></div>
 </div>
 
-<table>
-<thead>
-<tr><th>Date</th><th>Product</th><th>Region</th><th>Revenue</th></tr>
-</thead>
-<tbody id="table"></tbody>
-</table>
-
 <script>
 
 let raw=[];
 let charts=[];
 
-/* THEME */
-function toggleTheme(){
-  document.body.classList.toggle("light");
+/* STRONG CLEANER (FIXES "undefined") */
+function clean(v,fallback){
+  if(v===null||v===undefined) return fallback;
+
+  v = String(v)
+    .replace(/\u00A0/g," ")
+    .trim();
+
+  if(!v || v.toLowerCase()==="undefined") return fallback;
+
+  return v;
 }
 
 /* DATE FIX */
@@ -142,14 +166,9 @@ function fixDate(v){
   return v;
 }
 
-/* SAFE LABEL NORMALIZER (IMPORTANT FIX) */
-function normalize(v, fallback){
-  v = (v ?? "").toString().trim();
-
-  if(!v || v.toLowerCase()==="undefined"){
-    return fallback;
-  }
-  return v;
+/* THEME */
+function toggleTheme(){
+  document.body.classList.toggle("light");
 }
 
 /* FILE LOAD */
@@ -186,18 +205,36 @@ document.getElementById("file").onchange=e=>{
   reader.readAsArrayBuffer(e.target.files[0]);
 };
 
+/* GROUP TOP 5 + OTHER (ENTERPRISE FEATURE) */
+function groupTop5(obj){
+  let entries = Object.entries(obj)
+    .map(([k,v])=>[clean(k,"Unassigned"),v])
+    .sort((a,b)=>b[1]-a[1]);
+
+  let top5 = entries.slice(0,5);
+  let other = entries.slice(5).reduce((a,b)=>a+b[1],0);
+
+  if(other>0) top5.push(["Other",other]);
+
+  return {
+    labels: top5.map(x=>x[0]),
+    values: top5.map(x=>x[1])
+  };
+}
+
 /* RENDER */
 function render(){
 
   let rev=0,p={},r={},d={};
+  let prevRev = window._prevRev || 0;
 
   raw.forEach(x=>{
     let v=Number(x.Revenue)||0;
     rev+=v;
 
-    let product = normalize(x.Product,"Unassigned Product");
-    let region  = normalize(x.Region,"Unassigned Region");
-    let date    = normalize(x.Date,"Unknown Date");
+    let product=clean(x.Product,"Unassigned Product");
+    let region=clean(x.Region,"Unassigned Region");
+    let date=clean(x.Date,"Unknown Date");
 
     p[product]=(p[product]||0)+v;
     r[region]=(r[region]||0)+v;
@@ -206,60 +243,68 @@ function render(){
 
   let top=Object.keys(p).reduce((a,b)=>p[a]>p[b]?a:b,"-");
 
+  /* KPI TREND */
+  let change = prevRev ? ((rev-prevRev)/prevRev*100).toFixed(1) : 0;
+  let trend = document.getElementById("revTrend");
+  trend.innerHTML = rev>=prevRev
+    ? `▲ ${change}%`
+    : `▼ ${change}%`;
+
+  trend.className = rev>=prevRev ? "trend good" : "trend bad";
+
+  window._prevRev = rev;
+
   document.getElementById("rev").innerText="$"+rev.toLocaleString();
   document.getElementById("ord").innerText=raw.length;
   document.getElementById("top").innerText=top;
   document.getElementById("avg").innerText="$"+(rev/(raw.length||1)).toFixed(2);
 
-  renderTable();
   renderCharts(p,r,d);
 }
 
-/* TABLE */
-function renderTable(){
-  document.getElementById("table").innerHTML=
-    raw.map(r=>`
-      <tr>
-        <td>${r.Date}</td>
-        <td>${r.Product}</td>
-        <td>${r.Region}</td>
-        <td>${r.Revenue}</td>
-      </tr>
-    `).join("");
-}
-
-/* CHARTS */
+/* CHARTS (CLEAN + CENTERED LEGENDS) */
 function renderCharts(p,r,d){
 
   charts.forEach(c=>c.destroy());
   charts=[];
 
-  const prod={labels:Object.keys(p),values:Object.values(p)};
-  const reg={labels:Object.keys(r),values:Object.values(r)};
-  const dat={labels:Object.keys(d),values:Object.values(d)};
+  const prod = groupTop5(p);
+  const reg = groupTop5(r);
+  const dat = groupTop5(d);
+
+  const baseOptions = {
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{
+      legend:{
+        align:"center",
+        labels:{textAlign:"center"}
+      }
+    }
+  };
 
   charts.push(new Chart(c1,{
     type:"bar",
     data:{labels:prod.labels,datasets:[{data:prod.values}]},
-    options:{responsive:true,maintainAspectRatio:false}
+    options:baseOptions
   }));
 
   charts.push(new Chart(c2,{
     type:"pie",
     data:{labels:reg.labels,datasets:[{data:reg.values}]},
-    options:{responsive:true,maintainAspectRatio:false}
+    options:baseOptions
   }));
 
   charts.push(new Chart(c3,{
     type:"line",
     data:{labels:dat.labels,datasets:[{data:dat.values}]},
-    options:{responsive:true,maintainAspectRatio:false}
+    options:baseOptions
   }));
 
   charts.push(new Chart(c4,{
     type:"bar",
     data:{labels:dat.labels,datasets:[{data:dat.values}]},
-    options:{responsive:true,maintainAspectRatio:false}
+    options:baseOptions
   }));
 }
 
