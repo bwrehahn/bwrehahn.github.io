@@ -159,7 +159,7 @@ td{
 
 let raw=[];
 let charts=[];
-let drillState = null;
+let drillState=null;
 
 function toggleTheme(){
   document.body.classList.toggle("light");
@@ -190,7 +190,7 @@ function parseExcelDate(v){
   return s;
 }
 
-/* RESET TABLE */
+/* TABLE */
 function renderFullTable(){
   document.getElementById('table').innerHTML =
     raw.map(r=>`
@@ -203,7 +203,7 @@ function renderFullTable(){
     `).join('');
 }
 
-/* DRILL DOWN */
+/* DRILL */
 function drill(field, value){
 
   if(drillState && drillState.field === field && drillState.value === value){
@@ -265,26 +265,26 @@ function render(){
   const dates = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
   const values = dates.map(k=>d[k]);
 
-  let pct = 0;
-  let arrow = "—";
-  let color = "var(--muted)";
+  let pct=0;
+  let arrow="—";
+  let color="var(--muted)";
 
-  if(values.length > 1){
-    const prev = values[values.length-2];
-    const curr = values[values.length-1];
+  if(values.length>1){
+    const prev=values[values.length-2];
+    const curr=values[values.length-1];
 
-    if(prev !== 0){
-      pct = ((curr - prev) / prev) * 100;
-      arrow = pct >= 0 ? "▲" : "▼";
-      color = pct >= 0 ? "var(--green)" : "var(--red)";
+    if(prev!==0){
+      pct=((curr-prev)/prev)*100;
+      arrow=pct>=0?"▲":"▼";
+      color=pct>=0?"var(--green)":"var(--red)";
     }
   }
 
-  document.getElementById("kpiRevenue").innerText = "$" + totalRevenue.toLocaleString();
-  document.getElementById("kpiOrders").innerText = raw.length;
-  document.getElementById("kpiAvg").innerText = "$" + (totalRevenue/(raw.length||1)).toFixed(2);
+  document.getElementById("kpiRevenue").innerText="$"+totalRevenue.toLocaleString();
+  document.getElementById("kpiOrders").innerText=raw.length;
+  document.getElementById("kpiAvg").innerText="$"+(totalRevenue/(raw.length||1)).toFixed(2);
 
-  document.getElementById("kpiTrend").innerHTML =
+  document.getElementById("kpiTrend").innerHTML=
     `<span style="color:${color}">
       ${arrow} ${pct.toFixed(2)}%
     </span>`;
@@ -293,19 +293,20 @@ function render(){
   renderCharts(p,r,d);
 }
 
+/* CHARTS */
 function renderCharts(p,r,d){
 
   charts.forEach(c=>c.destroy());
   charts=[];
 
-  const pLabels = Object.keys(p);
-  const pValues = Object.values(p);
+  const pLabels=Object.keys(p);
+  const pValues=Object.values(p);
 
-  const rLabels = Object.keys(r);
-  const rValues = Object.values(r);
+  const rLabels=Object.keys(r);
+  const rValues=Object.values(r);
 
-  const dLabels = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
-  const dValues = dLabels.map(k=>d[k]);
+  const dLabels=Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
+  const dValues=dLabels.map(k=>d[k]);
 
   charts.push(new Chart(c1,{
     type:'bar',
