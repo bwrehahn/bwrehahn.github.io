@@ -137,6 +137,7 @@ td,th{
 
 th{
   color:var(--muted);
+  cursor:pointer;
 }
 </style>
 </head>
@@ -144,11 +145,12 @@ th{
 <body>
 
 <div class="header">
-  <b>Senior Analytics Dashboard</b>
+  <div><b>Senior Analytics Dashboard</b></div>
 
   <div class="actions">
     <input type="file" id="file">
-    <button onclick="toggleTheme()">Theme</button>
+    <button onclick="exportCSV()">Export CSV</button>
+    <button onclick="toggleTheme()">🌙 Theme</button>
   </div>
 </div>
 
@@ -189,36 +191,32 @@ function toggleTheme(){
   document.body.classList.toggle("light");
 }
 
-/* ✅ FIX: CLEAN DATE FUNCTION */
-function cleanDate(v){
-  if(v === null || v === undefined) return null;
-
-  if(typeof v === "number"){
-    const d = XLSX.SSF.parse_date_code(v);
-    if(!d) return null;
-    return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
-  }
-
-  v = String(v).trim();
-  if(!v || v.toLowerCase()==="undefined") return null;
-
-  return v;
-}
-
 /* FILE LOAD */
 document.getElementById('file').onchange=e=>{
   let r=new FileReader();
-
   r.onload=ev=>{
     let wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
     let sh=wb.Sheets[wb.SheetNames[0]];
     raw=XLSX.utils.sheet_to_json(sh);
     render();
   };
-
   r.readAsArrayBuffer(e.target.files[0]);
 };
 
+/* EXPORT CSV (RESTORED) */
+function exportCSV(){
+  let csv="Date,Product,Region,Revenue\n";
+  raw.forEach(r=>{
+    csv+=`${r.Date},${r.Product},${r.Region},${r.Revenue}\n`;
+  });
+  let blob=new Blob([csv],{type:"text/csv"});
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="data.csv";
+  a.click();
+}
+
+/* RENDER */
 function render(){
 
   let data=raw.filter(r=>{
@@ -234,12 +232,7 @@ function render(){
 
     p[x.Product]=(p[x.Product]||0)+v;
     r[x.Region]=(r[x.Region]||0)+v;
-
-    /* ✅ FIXED DATE HANDLING */
-    let date = cleanDate(x.Date);
-    if(date){
-      d[date]=(d[date]||0)+v;
-    }
+    d[x.Date]=(d[x.Date]||0)+v;
   });
 
   let top=Object.keys(p).reduce((a,b)=>p[a]>p[b]?a:b,"-");
@@ -264,6 +257,7 @@ function renderTable(data){
       </tr>`).join('');
 }
 
+/* FIXED: SORTED DATE CHART ONLY */
 function renderCharts(p,r,d){
 
   charts.forEach(c=>c.destroy());
@@ -281,7 +275,7 @@ function renderCharts(p,r,d){
     options:{responsive:true,maintainAspectRatio:false}
   }));
 
-  /* ✅ FIXED BOTTOM CHART (SORTED DATES) */
+  /* ✅ FIXED BOTTOM CHART */
   const sortedDates = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
 
   charts.push(new Chart(c3,{
