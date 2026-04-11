@@ -55,6 +55,36 @@ button:hover{
   opacity:.85;
 }
 
+/* KPI */
+.kpis{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  padding:10px 15px 0;
+}
+
+.kpi{
+  background:var(--card);
+  padding:10px;
+  border-radius:10px;
+  font-size:14px;
+}
+
+.kpi span{
+  font-weight:bold;
+  margin-left:6px;
+}
+
+.kpi small{
+  display:block;
+  margin-top:4px;
+  font-size:12px;
+}
+
+/* COLORS */
+.up{ color:#22c55e; }
+.down{ color:#ef4444; }
+
 .grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -111,6 +141,26 @@ td{
   </div>
 </div>
 
+<!-- KPI -->
+<div class="kpis">
+  <div class="kpi">
+    Revenue <span id="kpiRevenue">-</span>
+    <small id="kpiRevenueChange"></small>
+  </div>
+  <div class="kpi">
+    Orders <span id="kpiOrders">-</span>
+    <small id="kpiOrdersChange"></small>
+  </div>
+  <div class="kpi">
+    Avg Order <span id="kpiAvg">-</span>
+    <small id="kpiAvgChange"></small>
+  </div>
+  <div class="kpi">
+    Trend <span id="kpiTrend">-</span>
+    <small id="kpiTrendChange"></small>
+  </div>
+</div>
+
 <div class="grid">
   <div class="box"><canvas id="c1"></canvas></div>
   <div class="box"><canvas id="c2"></canvas></div>
@@ -136,9 +186,7 @@ function toggleTheme(){
   document.body.classList.toggle("light");
 }
 
-/* DATE PARSE */
 function parseExcelDate(v){
-
   if(v === null || v === undefined) return "";
 
   if(typeof v === "number"){
@@ -161,7 +209,6 @@ function parseExcelDate(v){
   return s;
 }
 
-/* FILE LOAD */
 document.getElementById('file').onchange=e=>{
   const reader=new FileReader();
 
@@ -185,14 +232,38 @@ document.getElementById('file').onchange=e=>{
 function render(){
 
   let p={},r={},d={};
+  let total=0;
 
   raw.forEach(x=>{
     let v=x.Revenue||0;
+    total+=v;
 
     p[x.Product]=(p[x.Product]||0)+v;
     r[x.Region]=(r[x.Region]||0)+v;
     d[x.Date]=(d[x.Date]||0)+v;
   });
+
+  const dates=Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
+  const values=dates.map(k=>d[k]);
+
+  const prev = values.length>1 ? values[values.length-2] : 0;
+  const curr = values.length>0 ? values[values.length-1] : 0;
+
+  const pct = prev===0 ? 0 : ((curr-prev)/prev)*100;
+
+  const arrow = pct>=0 ? "▲" : "▼";
+  const color = pct>=0 ? "up" : "down";
+
+  document.getElementById("kpiRevenue").innerText="$"+total.toLocaleString();
+  document.getElementById("kpiOrders").innerText=raw.length;
+  document.getElementById("kpiAvg").innerText="$"+(total/(raw.length||1)).toFixed(2);
+
+  document.getElementById("kpiTrend").innerText=arrow;
+  document.getElementById("kpiTrend").className=color;
+
+  document.getElementById("kpiTrendChange").innerText=
+    pct.toFixed(2)+"%";
+  document.getElementById("kpiTrendChange").className=color;
 
   renderTable();
   renderCharts(p,r,d);
@@ -215,73 +286,37 @@ function renderCharts(p,r,d){
   charts.forEach(c=>c.destroy());
   charts=[];
 
-  const pLabels = Object.keys(p);
-  const pValues = Object.values(p);
+  const pLabels=Object.keys(p);
+  const pValues=Object.values(p);
 
-  const rLabels = Object.keys(r);
-  const rValues = Object.values(r);
+  const rLabels=Object.keys(r);
+  const rValues=Object.values(r);
 
-  const dLabels = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
-  const dValues = dLabels.map(k=>d[k]);
+  const dLabels=Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
+  const dValues=dLabels.map(k=>d[k]);
 
   charts.push(new Chart(c1,{
     type:'bar',
-    data:{
-      labels:pLabels,
-      datasets:[{ label:"Revenue", data:pValues }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        title:{ display:true, text:"Revenue by Product" }
-      }
-    }
+    data:{labels:pLabels,datasets:[{label:"Revenue",data:pValues}]},
+    options:{responsive:true,maintainAspectRatio:false}
   }));
 
   charts.push(new Chart(c2,{
     type:'pie',
-    data:{
-      labels:rLabels,
-      datasets:[{ label:"Revenue", data:rValues }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        title:{ display:true, text:"Revenue by Region" }
-      }
-    }
+    data:{labels:rLabels,datasets:[{label:"Revenue",data:rValues}]},
+    options:{responsive:true,maintainAspectRatio:false}
   }));
 
   charts.push(new Chart(c3,{
     type:'line',
-    data:{
-      labels:dLabels,
-      datasets:[{ label:"Revenue", data:dValues }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        title:{ display:true, text:"Revenue Over Time" }
-      }
-    }
+    data:{labels:dLabels,datasets:[{label:"Revenue",data:dValues}]},
+    options:{responsive:true,maintainAspectRatio:false}
   }));
 
   charts.push(new Chart(c4,{
     type:'bar',
-    data:{
-      labels:dLabels,
-      datasets:[{ label:"Revenue", data:dValues }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        title:{ display:true, text:"Daily Revenue" }
-      }
-    }
+    data:{labels:dLabels,datasets:[{label:"Revenue",data:dValues}]},
+    options:{responsive:true,maintainAspectRatio:false}
   }));
 }
 
