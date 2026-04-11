@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Enterprise SaaS Dashboard</title>
+<title>Senior SaaS Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -13,10 +13,9 @@
   --card:#111c33;
   --text:#e5e7eb;
   --muted:#94a3b8;
-  --good:#22c55e;
-  --bad:#ef4444;
 }
 
+/* LIGHT MODE */
 body.light{
   --bg:#f4f6f8;
   --card:#ffffff;
@@ -31,11 +30,18 @@ body{
   color:var(--text);
 }
 
+/* HEADER */
 .header{
   display:flex;
   justify-content:space-between;
   padding:15px;
   border-bottom:1px solid #1f2a44;
+  align-items:center;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
 }
 
 button{
@@ -47,6 +53,27 @@ button{
   cursor:pointer;
 }
 
+button:hover{
+  opacity:.85;
+}
+
+/* CHIPS */
+.chips{
+  display:flex;
+  gap:8px;
+  padding:10px 15px;
+  flex-wrap:wrap;
+}
+
+.chip{
+  background:var(--card);
+  padding:6px 10px;
+  border-radius:20px;
+  font-size:12px;
+  cursor:pointer;
+}
+
+/* KPI */
 .kpis{
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -67,21 +94,23 @@ button{
 }
 
 .kpi p{
-  margin:6px 0 0;
   font-size:20px;
+  margin:8px 0 0;
 }
 
-.trend{
-  font-size:12px;
-  margin-top:4px;
+/* INSIGHT */
+.insight{
+  margin:0 15px 15px;
+  padding:12px;
+  background:var(--card);
+  border-radius:12px;
+  color:var(--muted);
 }
 
-.good{color:var(--good);}
-.bad{color:var(--bad);}
-
+/* CHART GRID (FIXED) */
 .grid{
   display:grid;
-  grid-template-columns:repeat(2,1fr);
+  grid-template-columns:repeat(2, minmax(0, 1fr));
   gap:15px;
   padding:15px;
 }
@@ -89,48 +118,67 @@ button{
 .box{
   background:var(--card);
   border-radius:12px;
+  padding:12px;
   height:320px;
-  padding:10px;
+  position:relative;
 }
 
+/* FIX: prevents squished charts */
 canvas{
   width:100%!important;
   height:100%!important;
+}
+
+/* TABLE */
+table{
+  width:calc(100% - 30px);
+  margin:15px;
+  border-collapse:collapse;
+  background:var(--card);
+  border-radius:12px;
+  overflow:hidden;
+}
+
+td,th{
+  padding:8px;
+  border-bottom:1px solid #1f2a44;
+}
+
+th{
+  color:var(--muted);
+  cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
+<!-- HEADER -->
 <div class="header">
-  <b>Enterprise SaaS Analytics Dashboard</b>
-  <input type="file" id="file">
-  <button onclick="toggleTheme()">Theme</button>
+  <div><b>Senior Analytics Dashboard</b></div>
+
+  <div class="actions">
+    <input type="file" id="file">
+    <button onclick="exportCSV()">Export CSV</button>
+    <button onclick="toggleTheme()">🌙 Theme</button>
+  </div>
 </div>
 
+<!-- FILTER CHIPS -->
+<div class="chips" id="chips"></div>
+
+<!-- KPI -->
 <div class="kpis">
-  <div class="kpi">
-    <h4>Revenue</h4>
-    <p id="rev">$0</p>
-    <div class="trend" id="revTrend"></div>
-  </div>
-
-  <div class="kpi">
-    <h4>Orders</h4>
-    <p id="ord">0</p>
-  </div>
-
-  <div class="kpi">
-    <h4>Top Product</h4>
-    <p id="top">-</p>
-  </div>
-
-  <div class="kpi">
-    <h4>Avg Order</h4>
-    <p id="avg">$0</p>
-  </div>
+  <div class="kpi"><h4>Revenue</h4><p id="rev">$0</p></div>
+  <div class="kpi"><h4>Orders</h4><p id="ord">0</p></div>
+  <div class="kpi"><h4>Top Product</h4><p id="top">-</p></div>
+  <div class="kpi"><h4>Avg Order</h4><p id="avg">$0</p></div>
 </div>
 
+<!-- INSIGHT -->
+<div class="insight" id="insight">Upload file to begin analysis...</div>
+
+<!-- CHARTS -->
 <div class="grid">
   <div class="box"><canvas id="c1"></canvas></div>
   <div class="box"><canvas id="c2"></canvas></div>
@@ -138,173 +186,160 @@ canvas{
   <div class="box"><canvas id="c4"></canvas></div>
 </div>
 
+<!-- TABLE -->
+<table>
+<thead>
+<tr>
+<th>Date</th><th>Product</th><th>Region</th><th>Revenue</th>
+</tr>
+</thead>
+<tbody id="table"></tbody>
+</table>
+
 <script>
 
 let raw=[];
+let filters={product:null,region:null};
 let charts=[];
 
-/* STRONG CLEANER (FIXES "undefined") */
-function clean(v,fallback){
-  if(v===null||v===undefined) return fallback;
-
-  v = String(v)
-    .replace(/\u00A0/g," ")
-    .trim();
-
-  if(!v || v.toLowerCase()==="undefined") return fallback;
-
-  return v;
-}
-
-/* DATE FIX */
-function fixDate(v){
-  if(typeof v==="number"){
-    const d=XLSX.SSF.parse_date_code(v);
-    if(!d) return v;
-    return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
-  }
-  return v;
-}
-
-/* THEME */
+/* THEME TOGGLE */
 function toggleTheme(){
   document.body.classList.toggle("light");
 }
 
 /* FILE LOAD */
-document.getElementById("file").onchange=e=>{
-  const reader=new FileReader();
-
-  reader.onload=ev=>{
-    const wb=XLSX.read(new Uint8Array(ev.target.result),{type:"array"});
-    const sh=wb.Sheets[wb.SheetNames[0]];
-
-    const json=XLSX.utils.sheet_to_json(sh,{
-      defval:"",
-      raw:false
-    });
-
-    raw=json.map(r=>{
-      let o={Product:"",Region:"",Date:"",Revenue:0};
-
-      Object.keys(r).forEach(k=>{
-        let key=k.toLowerCase().trim();
-
-        if(key.includes("product")) o.Product=r[k];
-        if(key.includes("region")) o.Region=r[k];
-        if(key.includes("date")) o.Date=fixDate(r[k]);
-        if(key.includes("revenue")) o.Revenue=Number(r[k])||0;
-      });
-
-      return o;
-    }).filter(r=>r.Date);
-
+document.getElementById('file').onchange=e=>{
+  let r=new FileReader();
+  r.onload=ev=>{
+    let wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+    let sh=wb.Sheets[wb.SheetNames[0]];
+    raw=XLSX.utils.sheet_to_json(sh);
     render();
   };
-
-  reader.readAsArrayBuffer(e.target.files[0]);
+  r.readAsArrayBuffer(e.target.files[0]);
 };
 
-/* GROUP TOP 5 + OTHER (ENTERPRISE FEATURE) */
-function groupTop5(obj){
-  let entries = Object.entries(obj)
-    .map(([k,v])=>[clean(k,"Unassigned"),v])
-    .sort((a,b)=>b[1]-a[1]);
+/* FILTER */
+function setFilter(type,value){
+  filters[type]=value;
+  render();
+}
 
-  let top5 = entries.slice(0,5);
-  let other = entries.slice(5).reduce((a,b)=>a+b[1],0);
+function clearFilter(type){
+  filters[type]=null;
+  render();
+}
 
-  if(other>0) top5.push(["Other",other]);
-
-  return {
-    labels: top5.map(x=>x[0]),
-    values: top5.map(x=>x[1])
-  };
+/* EXPORT */
+function exportCSV(){
+  let csv="Date,Product,Region,Revenue\n";
+  raw.forEach(r=>{
+    csv+=`${r.Date},${r.Product},${r.Region},${r.Revenue}\n`;
+  });
+  let blob=new Blob([csv],{type:"text/csv"});
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="data.csv";
+  a.click();
 }
 
 /* RENDER */
 function render(){
 
+  let data=raw.filter(r=>{
+    return (!filters.product||r.Product===filters.product)&&
+           (!filters.region||r.Region===filters.region);
+  });
+
   let rev=0,p={},r={},d={};
-  let prevRev = window._prevRev || 0;
 
-  raw.forEach(x=>{
-    let v=Number(x.Revenue)||0;
+  data.forEach(x=>{
+    let v=+x.Revenue||0;
     rev+=v;
-
-    let product=clean(x.Product,"Unassigned Product");
-    let region=clean(x.Region,"Unassigned Region");
-    let date=clean(x.Date,"Unknown Date");
-
-    p[product]=(p[product]||0)+v;
-    r[region]=(r[region]||0)+v;
-    d[date]=(d[date]||0)+v;
+    p[x.Product]=(p[x.Product]||0)+v;
+    r[x.Region]=(r[x.Region]||0)+v;
+    d[x.Date]=(d[x.Date]||0)+v;
   });
 
   let top=Object.keys(p).reduce((a,b)=>p[a]>p[b]?a:b,"-");
 
-  /* KPI TREND */
-  let change = prevRev ? ((rev-prevRev)/prevRev*100).toFixed(1) : 0;
-  let trend = document.getElementById("revTrend");
-  trend.innerHTML = rev>=prevRev
-    ? `▲ ${change}%`
-    : `▼ ${change}%`;
+  document.getElementById('rev').innerText="$"+rev.toLocaleString();
+  document.getElementById('ord').innerText=data.length;
+  document.getElementById('top').innerText=top;
+  document.getElementById('avg').innerText="$"+(rev/(data.length||1)).toFixed(2);
 
-  trend.className = rev>=prevRev ? "trend good" : "trend bad";
+  document.getElementById('insight').innerText=
+    `Insight: ${top} is leading revenue. Total revenue: $${rev.toLocaleString()}`;
 
-  window._prevRev = rev;
-
-  document.getElementById("rev").innerText="$"+rev.toLocaleString();
-  document.getElementById("ord").innerText=raw.length;
-  document.getElementById("top").innerText=top;
-  document.getElementById("avg").innerText="$"+(rev/(raw.length||1)).toFixed(2);
-
+  renderChips();
+  renderTable(data);
   renderCharts(p,r,d);
 }
 
-/* CHARTS (CLEAN + CENTERED LEGENDS) */
+/* CHIPS */
+function renderChips(){
+  let c=document.getElementById('chips');
+  c.innerHTML="";
+
+  if(filters.product)
+    c.innerHTML+=`<div class="chip" onclick="clearFilter('product')">Product: ${filters.product} ✕</div>`;
+
+  if(filters.region)
+    c.innerHTML+=`<div class="chip" onclick="clearFilter('region')">Region: ${filters.region} ✕</div>`;
+}
+
+/* TABLE */
+function renderTable(data){
+  document.getElementById('table').innerHTML=
+    data.map(r=>`
+      <tr>
+        <td>${r.Date}</td>
+        <td>${r.Product}</td>
+        <td>${r.Region}</td>
+        <td>${r.Revenue}</td>
+      </tr>`).join('');
+}
+
+/* CHARTS + DRILLDOWN */
 function renderCharts(p,r,d){
 
   charts.forEach(c=>c.destroy());
   charts=[];
 
-  const prod = groupTop5(p);
-  const reg = groupTop5(r);
-  const dat = groupTop5(d);
-
-  const baseOptions = {
-    responsive:true,
-    maintainAspectRatio:false,
-    plugins:{
-      legend:{
-        align:"center",
-        labels:{textAlign:"center"}
+  charts.push(new Chart(c1,{
+    type:'bar',
+    data:{labels:Object.keys(p),datasets:[{data:Object.values(p)}]},
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      onClick:(e,i)=>{
+        if(i.length)setFilter('product',Object.keys(p)[i[0].index]);
       }
     }
-  };
-
-  charts.push(new Chart(c1,{
-    type:"bar",
-    data:{labels:prod.labels,datasets:[{data:prod.values}]},
-    options:baseOptions
   }));
 
   charts.push(new Chart(c2,{
-    type:"pie",
-    data:{labels:reg.labels,datasets:[{data:reg.values}]},
-    options:baseOptions
+    type:'pie',
+    data:{labels:Object.keys(r),datasets:[{data:Object.values(r)}]},
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      onClick:(e,i)=>{
+        if(i.length)setFilter('region',Object.keys(r)[i[0].index]);
+      }
+    }
   }));
 
   charts.push(new Chart(c3,{
-    type:"line",
-    data:{labels:dat.labels,datasets:[{data:dat.values}]},
-    options:baseOptions
+    type:'line',
+    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
+    options:{responsive:true,maintainAspectRatio:false}
   }));
 
   charts.push(new Chart(c4,{
-    type:"bar",
-    data:{labels:dat.labels,datasets:[{data:dat.values}]},
-    options:baseOptions
+    type:'bar',
+    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
+    options:{responsive:true,maintainAspectRatio:false}
   }));
 }
 
