@@ -229,13 +229,19 @@ function renderCharts(p,r,d){
 
   charts.push(new Chart(c1,{
     type:'bar',
-    data:{labels:Object.keys(p),datasets:[{data:Object.values(p)}]},
+    data:{labels:Object.keys(p),datasets:[{
+  label:"Revenue by Product",
+  data:Object.values(p)
+}]
     options:{responsive:true,maintainAspectRatio:false}
   }));
 
   charts.push(new Chart(c2,{
     type:'pie',
-    data:{labels:Object.keys(r),datasets:[{data:Object.values(r)}]},
+    data:{labels:Object.keys(r),datasets:[{
+  label:"Revenue by Region",
+  data:Object.values(r)
+}]
     options:{responsive:true,maintainAspectRatio:false}
   }));
 
@@ -245,14 +251,20 @@ function renderCharts(p,r,d){
     type:'line',
     data:{
       labels: sortedDates,
-      datasets:[{data: sortedDates.map(k=>d[k])}]
+      datasets:[{
+  label:"Revenue Over Time",
+  data: sortedDates.map(k=>d[k])
+}]
     },
     options:{responsive:true,maintainAspectRatio:false}
   }));
 
   charts.push(new Chart(c4,{
     type:'bar',
-    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
+    data:{labels:Object.keys(d),datasets:[{
+  label:"Daily Revenue",
+  data:Object.values(d)
+}]
     options:{responsive:true,maintainAspectRatio:false}
   }));
 }
