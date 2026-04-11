@@ -1,69 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Senior SaaS Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<style>
+:root{
+  --bg:#0b1220;
+  --card:#111c33;
+  --text:#e5e7eb;
+  --muted:#94a3b8;
+}
+
+body.light{
+  --bg:#f4f6f8;
+  --card:#ffffff;
+  --text:#111;
+  --muted:#555;
+}
+
+body{
+  margin:0;
+  font-family:Arial;
+  background:var(--bg);
+  color:var(--text);
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  padding:15px;
+  border-bottom:1px solid #1f2a44;
+  align-items:center;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+}
+
+button{
+  background:var(--card);
+  color:var(--text);
+  border:none;
+  padding:6px 10px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+button:hover{
+  opacity:.85;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+  padding:15px;
+}
+
+.box{
+  background:var(--card);
+  height:320px;
+  border-radius:12px;
+  padding:10px;
+}
+
+canvas{
+  width:100%!important;
+  height:100%!important;
+}
+
+table{
+  width:calc(100% - 30px);
+  margin:15px;
+  background:var(--card);
+  border-collapse:collapse;
+  border-radius:12px;
+  overflow:hidden;
+}
+
+th{
+  text-align:left;
+  padding:10px;
+  color:var(--muted);
+  font-weight:600;
+}
+
+td{
+  text-align:left;
+  padding:10px;
+  opacity:0.9;
+  border-bottom:1px solid #1f2a44;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <b>Senior SaaS Dashboard</b>
+
+  <div class="actions">
+    <input type="file" id="file">
+    <button onclick="toggleTheme()">🌙 Theme</button>
+    <button onclick="exportCSV()">Export CSV</button>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="box"><canvas id="c1"></canvas></div>
+  <div class="box"><canvas id="c2"></canvas></div>
+  <div class="box"><canvas id="c3"></canvas></div>
+  <div class="box"><canvas id="c4"></canvas></div>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Date</th><th>Product</th><th>Region</th><th>Revenue</th>
+</tr>
+</thead>
+<tbody id="table"></tbody>
+</table>
+
+<script>
+
+let raw=[];
+let charts=[];
+
+function toggleTheme(){
+  document.body.classList.toggle("light");
+}
+
+/* DATE PARSE */
+function parseExcelDate(v){
+
+  if(v === null || v === undefined) return "";
+
+  if(typeof v === "number"){
+    const d = XLSX.SSF.parse_date_code(v);
+    if(!d) return "";
+    return `${String(d.m).padStart(2,'0')}/${String(d.d).padStart(2,'0')}/${d.y}`;
+  }
+
+  let s = String(v).trim();
+  if(!s || s.toLowerCase()==="undefined") return "";
+
+  const d = new Date(s);
+  if(!isNaN(d.getTime())){
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    const yyyy = d.getFullYear();
+    return `${mm}/${dd}/${yyyy}`;
+  }
+
+  return s;
+}
+
+/* ✅ SAFE FIX: REMOVE BAD LABELS ONLY AT CHART LEVEL */
+function removeBadKeys(obj){
+  return Object.fromEntries(
+    Object.entries(obj).filter(([k,v]) =>
+      k !== undefined &&
+      k !== null &&
+      k !== "" &&
+      k !== "undefined"
+    )
+  );
+}
+
+/* FILE LOAD */
+document.getElementById('file').onchange=e=>{
+  const reader=new FileReader();
+
+  reader.onload=ev=>{
+    const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+    const sh=wb.Sheets[wb.SheetNames[0]];
+
+    raw=XLSX.utils.sheet_to_json(sh,{defval:""}).map(r=>({
+      Date: parseExcelDate(r.Date),
+      Product: r.Product,
+      Region: r.Region,
+      Revenue: Number(r.Revenue)||0
+    }));
+
+    render();
+  };
+
+  reader.readAsArrayBuffer(e.target.files[0]);
+};
+
+function render(){
+
+  let p={},r={},d={};
+
+  raw.forEach(x=>{
+    let v=x.Revenue||0;
+
+    p[x.Product]=(p[x.Product]||0)+v;
+    r[x.Region]=(r[x.Region]||0)+v;
+    d[x.Date]=(d[x.Date]||0)+v;
+  });
+
+  renderTable();
+  renderCharts(p,r,d);
+}
+
+function renderTable(){
+  document.getElementById('table').innerHTML =
+    raw.map(r=>`
+      <tr>
+        <td>${r.Date}</td>
+        <td>${r.Product}</td>
+        <td>${r.Region}</td>
+        <td>${r.Revenue}</td>
+      </tr>
+    `).join('');
+}
+
 function renderCharts(p,r,d){
+
+  // ✅ ONLY CHANGE: remove bad labels here
+  p = removeBadKeys(p);
+  r = removeBadKeys(r);
+  d = removeBadKeys(d);
 
   charts.forEach(c=>c.destroy());
   charts=[];
 
-  // ✅ CLEAN PRODUCT DATA
-  let pEntries = Object.entries(p).filter(([k,v]) =>
-    k && k !== "undefined"
-  );
-
-  let pLabels = pEntries.map(e=>e[0]);
-  let pValues = pEntries.map(e=>e[1]);
-
-  // ✅ CLEAN REGION DATA
-  let rEntries = Object.entries(r).filter(([k,v]) =>
-    k && k !== "undefined"
-  );
-
-  let rLabels = rEntries.map(e=>e[0]);
-  let rValues = rEntries.map(e=>e[1]);
-
-  // ✅ CLEAN DATE DATA
-  let dEntries = Object.entries(d).filter(([k,v]) =>
-    k && k !== "undefined"
-  );
-
-  // SORT DATES PROPERLY
-  dEntries.sort((a,b)=>new Date(a[0]) - new Date(b[0]));
-
-  let dLabels = dEntries.map(e=>e[0]);
-  let dValues = dEntries.map(e=>e[1]);
-
-  // CHARTS
   charts.push(new Chart(c1,{
     type:'bar',
-    data:{
-      labels:pLabels,
-      datasets:[{data:pValues}]
-    },
+    data:{labels:Object.keys(p),datasets:[{data:Object.values(p)}]},
     options:{responsive:true,maintainAspectRatio:false}
   }));
 
   charts.push(new Chart(c2,{
     type:'pie',
-    data:{
-      labels:rLabels,
-      datasets:[{data:rValues}]
-    },
+    data:{labels:Object.keys(r),datasets:[{data:Object.values(r)}]},
     options:{responsive:true,maintainAspectRatio:false}
   }));
+
+  const sortedDates = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
 
   charts.push(new Chart(c3,{
     type:'line',
     data:{
-      labels:dLabels,
-      datasets:[{data:dValues}]
+      labels: sortedDates,
+      datasets:[{data: sortedDates.map(k=>d[k])}]
     },
     options:{responsive:true,maintainAspectRatio:false}
   }));
 
   charts.push(new Chart(c4,{
     type:'bar',
-    data:{
-      labels:dLabels,
-      datasets:[{data:dValues}]
-    },
+    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
     options:{responsive:true,maintainAspectRatio:false}
   }));
 }
+
+function exportCSV(){
+  let csv="Date,Product,Region,Revenue\n";
+  raw.forEach(r=>{
+    csv+=`${r.Date},${r.Product},${r.Region},${r.Revenue}\n`;
+  });
+
+  const blob=new Blob([csv],{type:"text/csv"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="data.csv";
+  a.click();
+}
+
+</script>
+
+</body>
+</html>
