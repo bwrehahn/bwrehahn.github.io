@@ -15,7 +15,6 @@
   --muted:#94a3b8;
 }
 
-/* LIGHT MODE */
 body.light{
   --bg:#f4f6f8;
   --card:#ffffff;
@@ -30,7 +29,6 @@ body{
   color:var(--text);
 }
 
-/* HEADER */
 .header{
   display:flex;
   justify-content:space-between;
@@ -57,7 +55,6 @@ button:hover{
   opacity:.85;
 }
 
-/* CHIPS */
 .chips{
   display:flex;
   gap:8px;
@@ -73,7 +70,6 @@ button:hover{
   cursor:pointer;
 }
 
-/* KPI */
 .kpis{
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -98,7 +94,6 @@ button:hover{
   margin:8px 0 0;
 }
 
-/* INSIGHT */
 .insight{
   margin:0 15px 15px;
   padding:12px;
@@ -107,7 +102,6 @@ button:hover{
   color:var(--muted);
 }
 
-/* CHART GRID (FIXED) */
 .grid{
   display:grid;
   grid-template-columns:repeat(2, minmax(0, 1fr));
@@ -120,16 +114,13 @@ button:hover{
   border-radius:12px;
   padding:12px;
   height:320px;
-  position:relative;
 }
 
-/* FIX: prevents squished charts */
 canvas{
   width:100%!important;
   height:100%!important;
 }
 
-/* TABLE */
 table{
   width:calc(100% - 30px);
   margin:15px;
@@ -146,28 +137,23 @@ td,th{
 
 th{
   color:var(--muted);
-  cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <div class="header">
-  <div><b>Senior Analytics Dashboard</b></div>
+  <b>Senior Analytics Dashboard</b>
 
   <div class="actions">
     <input type="file" id="file">
-    <button onclick="exportCSV()">Export CSV</button>
-    <button onclick="toggleTheme()">🌙 Theme</button>
+    <button onclick="toggleTheme()">Theme</button>
   </div>
 </div>
 
-<!-- FILTER CHIPS -->
 <div class="chips" id="chips"></div>
 
-<!-- KPI -->
 <div class="kpis">
   <div class="kpi"><h4>Revenue</h4><p id="rev">$0</p></div>
   <div class="kpi"><h4>Orders</h4><p id="ord">0</p></div>
@@ -175,10 +161,8 @@ th{
   <div class="kpi"><h4>Avg Order</h4><p id="avg">$0</p></div>
 </div>
 
-<!-- INSIGHT -->
 <div class="insight" id="insight">Upload file to begin analysis...</div>
 
-<!-- CHARTS -->
 <div class="grid">
   <div class="box"><canvas id="c1"></canvas></div>
   <div class="box"><canvas id="c2"></canvas></div>
@@ -186,7 +170,6 @@ th{
   <div class="box"><canvas id="c4"></canvas></div>
 </div>
 
-<!-- TABLE -->
 <table>
 <thead>
 <tr>
@@ -202,48 +185,40 @@ let raw=[];
 let filters={product:null,region:null};
 let charts=[];
 
-/* THEME TOGGLE */
 function toggleTheme(){
   document.body.classList.toggle("light");
+}
+
+/* ✅ FIX: CLEAN DATE FUNCTION */
+function cleanDate(v){
+  if(v === null || v === undefined) return null;
+
+  if(typeof v === "number"){
+    const d = XLSX.SSF.parse_date_code(v);
+    if(!d) return null;
+    return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+  }
+
+  v = String(v).trim();
+  if(!v || v.toLowerCase()==="undefined") return null;
+
+  return v;
 }
 
 /* FILE LOAD */
 document.getElementById('file').onchange=e=>{
   let r=new FileReader();
+
   r.onload=ev=>{
     let wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
     let sh=wb.Sheets[wb.SheetNames[0]];
     raw=XLSX.utils.sheet_to_json(sh);
     render();
   };
+
   r.readAsArrayBuffer(e.target.files[0]);
 };
 
-/* FILTER */
-function setFilter(type,value){
-  filters[type]=value;
-  render();
-}
-
-function clearFilter(type){
-  filters[type]=null;
-  render();
-}
-
-/* EXPORT */
-function exportCSV(){
-  let csv="Date,Product,Region,Revenue\n";
-  raw.forEach(r=>{
-    csv+=`${r.Date},${r.Product},${r.Region},${r.Revenue}\n`;
-  });
-  let blob=new Blob([csv],{type:"text/csv"});
-  let a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="data.csv";
-  a.click();
-}
-
-/* RENDER */
 function render(){
 
   let data=raw.filter(r=>{
@@ -256,9 +231,15 @@ function render(){
   data.forEach(x=>{
     let v=+x.Revenue||0;
     rev+=v;
+
     p[x.Product]=(p[x.Product]||0)+v;
     r[x.Region]=(r[x.Region]||0)+v;
-    d[x.Date]=(d[x.Date]||0)+v;
+
+    /* ✅ FIXED DATE HANDLING */
+    let date = cleanDate(x.Date);
+    if(date){
+      d[date]=(d[date]||0)+v;
+    }
   });
 
   let top=Object.keys(p).reduce((a,b)=>p[a]>p[b]?a:b,"-");
@@ -268,27 +249,10 @@ function render(){
   document.getElementById('top').innerText=top;
   document.getElementById('avg').innerText="$"+(rev/(data.length||1)).toFixed(2);
 
-  document.getElementById('insight').innerText=
-    `Insight: ${top} is leading revenue. Total revenue: $${rev.toLocaleString()}`;
-
-  renderChips();
   renderTable(data);
   renderCharts(p,r,d);
 }
 
-/* CHIPS */
-function renderChips(){
-  let c=document.getElementById('chips');
-  c.innerHTML="";
-
-  if(filters.product)
-    c.innerHTML+=`<div class="chip" onclick="clearFilter('product')">Product: ${filters.product} ✕</div>`;
-
-  if(filters.region)
-    c.innerHTML+=`<div class="chip" onclick="clearFilter('region')">Region: ${filters.region} ✕</div>`;
-}
-
-/* TABLE */
 function renderTable(data){
   document.getElementById('table').innerHTML=
     data.map(r=>`
@@ -300,7 +264,6 @@ function renderTable(data){
       </tr>`).join('');
 }
 
-/* CHARTS + DRILLDOWN */
 function renderCharts(p,r,d){
 
   charts.forEach(c=>c.destroy());
@@ -309,30 +272,26 @@ function renderCharts(p,r,d){
   charts.push(new Chart(c1,{
     type:'bar',
     data:{labels:Object.keys(p),datasets:[{data:Object.values(p)}]},
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      onClick:(e,i)=>{
-        if(i.length)setFilter('product',Object.keys(p)[i[0].index]);
-      }
-    }
+    options:{responsive:true,maintainAspectRatio:false}
   }));
 
   charts.push(new Chart(c2,{
     type:'pie',
     data:{labels:Object.keys(r),datasets:[{data:Object.values(r)}]},
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      onClick:(e,i)=>{
-        if(i.length)setFilter('region',Object.keys(r)[i[0].index]);
-      }
-    }
+    options:{responsive:true,maintainAspectRatio:false}
   }));
+
+  /* ✅ FIXED BOTTOM CHART (SORTED DATES) */
+  const sortedDates = Object.keys(d).sort((a,b)=>new Date(a)-new Date(b));
 
   charts.push(new Chart(c3,{
     type:'line',
-    data:{labels:Object.keys(d),datasets:[{data:Object.values(d)}]},
+    data:{
+      labels: sortedDates,
+      datasets:[{
+        data: sortedDates.map(k=>d[k])
+      }]
+    },
     options:{responsive:true,maintainAspectRatio:false}
   }));
 
