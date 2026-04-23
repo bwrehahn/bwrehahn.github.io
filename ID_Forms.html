@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instructional Design Forms | Learner Analysis & Needs Assessment</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --slate: #2d3561;
+    --accent: #c84b31;
+    --gold: #e2b04a;
+    --cream: #faf8f3;
+    --rule: #d9d3c7;
+    --field-bg: #ffffff;
+    --muted: #6e6a62;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── TAB NAVIGATION ── */
+  .tab-bar {
+    background: var(--slate);
+    display: flex;
+    gap: 0;
+    padding: 0 40px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,.25);
+  }
+
+  .tab-btn {
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.55);
+    background: transparent;
+    border: none;
+    padding: 18px 28px;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all .2s;
+  }
+
+  .tab-btn:hover { color: rgba(255,255,255,.85); }
+  .tab-btn.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+
+  /* ── MASTHEAD ── */
+  .masthead {
+    background: var(--slate);
+    color: white;
+    padding: 48px 60px 40px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .masthead-left {}
+
+  .form-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .masthead h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 38px;
+    font-weight: 900;
+    line-height: 1.1;
+    color: white;
+  }
+
+  .masthead-rule {
+    width: 60px;
+    height: 3px;
+    background: var(--accent);
+    margin: 14px 0 10px;
+  }
+
+  .masthead p {
+    color: rgba(255,255,255,.65);
+    font-size: 14px;
+    max-width: 480px;
+  }
+
+  .print-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 14px 28px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .2s;
+    flex-shrink: 0;
+  }
+
+  .print-btn:hover { background: #a83a22; }
+
+  /* ── PAGE WRAPPER ── */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .form-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 40px 80px;
+  }
+
+  /* ── SECTIONS ── */
+  .form-section {
+    margin-bottom: 40px;
+    border-left: 3px solid var(--accent);
+    padding-left: 20px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--slate);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-num {
+    background: var(--accent);
+    color: white;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* ── FIELDS ── */
+  .field-group {
+    margin-bottom: 18px;
+  }
+
+  label {
+    display: block;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .required-star { color: var(--accent); margin-left: 2px; }
+
+  input[type="text"],
+  input[type="date"],
+  select,
+  textarea {
+    width: 100%;
+    background: var(--field-bg);
+    border: 1.5px solid var(--rule);
+    color: var(--ink);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 14px;
+    padding: 10px 14px;
+    transition: border-color .15s;
+    outline: none;
+    border-radius: 0;
+    appearance: none;
+  }
+
+  input[type="text"]:focus,
+  input[type="date"]:focus,
+  select:focus,
+  textarea:focus {
+    border-color: var(--slate);
+    box-shadow: 0 0 0 3px rgba(45,53,97,.08);
+  }
+
+  textarea { resize: vertical; min-height: 90px; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .three-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* ── SCALE ROWS ── */
+  .scale-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 6px;
+  }
+
+  .scale-table th {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 10px;
+    text-align: center;
+    border-bottom: 2px solid var(--rule);
+  }
+
+  .scale-table th:first-child { text-align: left; }
+
+  .scale-table td {
+    padding: 10px 10px;
+    border-bottom: 1px solid #eeeae3;
+    font-size: 13px;
+    vertical-align: middle;
+  }
+
+  .scale-table td:not(:first-child) { text-align: center; }
+
+  .scale-table tr:last-child td { border-bottom: none; }
+  .scale-table tr:hover td { background: #f5f2eb; }
+
+  .scale-table input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--accent);
+  }
+
+  /* ── CHECKBOX GRID ── */
+  .check-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .check-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  /* ── DIVIDER ── */
+  .form-divider {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 32px 0;
+  }
+
+  /* ── HELPER TEXT ── */
+  .helper { font-size: 12px; color: var(--muted); margin-top: 4px; font-style: italic; }
+
+  /* ── SUBMIT ROW ── */
+  .form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 2px solid var(--rule);
+  }
+
+  .footer-note { font-size: 12px; color: var(--muted); }
+
+  .btn-clear {
+    background: transparent;
+    border: 1.5px solid var(--rule);
+    color: var(--muted);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 11px 22px;
+    cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+
+  .btn-clear:hover { border-color: var(--ink); color: var(--ink); }
+
+  /* ── PRINT ── */
+  @media print {
+    .tab-bar, .print-btn, .form-footer, .btn-clear { display: none !important; }
+    .masthead { padding: 24px 40px; }
+    .tab-panel { display: block !important; page-break-after: always; }
+    .tab-panel:last-child { page-break-after: auto; }
+    body { background: white; }
+    input, textarea, select {
+      border: 1px solid #999 !important;
+      background: white !important;
+    }
+    .form-wrapper { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TAB BAR -->
+<nav class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('learner')">Learner Analysis</button>
+  <button class="tab-btn" onclick="switchTab('needs')">Needs Assessment</button>
+</nav>
+
+<!-- ════════════════════════════════════════
+     LEARNER ANALYSIS
+════════════════════════════════════════ -->
+<div id="tab-learner" class="tab-panel active">
+
+  <div class="masthead">
+    <div class="masthead-left">
+      <div class="form-eyebrow">Instructional Design Portfolio</div>
+      <h1>Learner Analysis</h1>
+      <div class="masthead-rule"></div>
+      <p>A structured tool for understanding your target audience before designing any learning experience.</p>
+    </div>
+    <button class="print-btn" onclick="window.print()">⬇ Print / Save PDF</button>
+  </div>
+
+  <div class="form-wrapper">
+
+    <!-- SECTION 1: PROJECT INFO -->
+    <div class="form-section">
+      <div class="section-title"><span class="section-num">1</span> Project Information</div>
+
+      <div class="two-col">
+        <div class="field-group">
+          <label>Project / Course Title <span class="required-star">*</span></label>
+          <input type="text" placeholder="e.g., New Employee Onboarding Module">
+        </div>
+        <div class="field-group">
+          <label>Instructional Designer</label>
+          <input type="text" placeholder="Your name">
+        </div>
+      </div>
+
+      <div class="three-col">
+        <div class="field-group">
+          <label>Date Completed</label>
+          <input type="date">
+        </div>
+        <div class="field-group">
+          <label>Client / Stakeholder</label>
+          <input type="text" placeholder="Department or organization">
+        </div>
+        <div class="field-group">
+          <label>Delivery Format</label>
+          <select>
+            <option value="">— Select —</option>
+            <option>eLearning (self-paced)</option>
+            <option>Instructor-Led Training</option>
+            <option>Virtual Instructor-Led</option>
+            <option>Blended</option>
+            <option>Job Aid / Performance Support</option>
+            <option>Microlearning</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: DEMOGRAPHICS -->
+    <div class="form-section">
+      <div class="section-title"><span class="section-num">2</span> Learner Demographics</div>
+
+      <div class="two-col">
+        <div class="field-group">
+          <label>Estimated Number of Learners</label>
+          <input type="text" placeholder="e.g., 50–100">
+        </div>
+        <div class="field-group">
+          <label>Age Range</label>
+          <input type="text" placeholder="e.g., 22–45">
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="field-group">
+          <label>Job Titles / Roles</label>
+          <textarea placeholder="List the primary roles of the target audience…"></textarea>
+        </div>
+        <div class="field-group">
+          <label>Geographic Location(s)</label>
+          <textarea placeholder="Where are learners located? Any remote/in-person considerations?"></textarea>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Education Level</label>
+        <div class="check-grid">
+          <label class="check-item"><input type="checkbox"> High school / GED</label>
+          <label class="check-item"><input type="checkbox"> Some college</label>
+          <label class="check-item"><input type="checkbox"> Associate degree</label>
+          <label class="check-item"><input type="checkbox"> Bachelor's degree</label>
+          <label class="check-item"><input type="checkbox"> Graduate degree</label>
+          <label class="check-item"><input type="checkbox"> Varies / Unknown</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: PRIOR KNOWLEDGE -->
+    <div class="form-section">
+      <div class="section-title"><span class="section-num">3</span> Prior Knowledge & Experience</div>
+
+      <div class="field-group">
+        <label>What prior knowledge do learners already have related to this topic?</label>
+        <textarea placeholder="Describe existing knowledge, skills, or experience relevant to the training…"></textarea>
+      </div>
+
+      <div class="field-group">
+        <label>Rate learners' overall familiarity with the subject matter</label>
+        <table class="scale-table">
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th>1 — None</th>
+              <th>2 — Basic</th>
+              <th>3 — Moderate</th>
+              <th>4 — Advanced</th>
+              <th>5 — Expert</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Subject matter knowledge</td>
+              <td><input type="radio" name="smk" value="1"></td>
+              <td><input type="radio" name="smk" value="2"></td>
+              <td><input type="radio" name="smk" value="3"></td>
+              <td><input type="radio" name="smk" value="4"></td>
+              <td><input type="radio" name="smk" value="5"></td>
+            </tr>
+            <tr>
+              <td>Technology comfort level</td>
+              <td><input type="radio" name="tech" value="1"></td>
+              <td><input type="radio" name="tech" value="2"></td>
+              <td><input type="radio" name="tech" value="3"></td>
+              <td><input type="radio" name="tech" value="4"></td>
+              <td><input type="radio" name="tech" value="5"></td>
+            </tr>
+            <tr>
+              <td>Prior training on this topic</td>
+              <td><input type="radio" name="prior" value="1"></td>
+              <td><input type="radio" name="prior" value="2"></td>
+              <td><input type="radio" name="prior" value="3"></td>
+              <td><input type="radio" name="prior" value="4"></td>
+              <td><input type="radio" name="prior" value="5"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="field-group">
+        <label>Any known misconceptions or gaps to address?</label>
+        <textarea placeholder="Note any common mistakes, outdated practices, or conceptual gaps…"></textarea>
+      </div>
+    </div>
+
+    <!-- SECTION 4: MOTIVATION & ATTITUDE -->
+    <div class="form-section">
+      <div class="section-title"><span class="section-num">4</span> Motivation & Attitudes</div>
+
+      <div class="field-group">
+        <label>Why are learners taking this training?</label>
+        <div class="check-grid">
+          <label class="check-item"><input type="checkbox"> Required / mandatory</label>
+          <label class="check-item"><input type="checkbox"> Self-directed / voluntary</label>
+          <label class="check-item"><input type="checkbox"> Career advancement</label>
+          <label class="check-item"><input type="checkbox"> Compliance/regulation</label>
+          <label class="check-item"><input type="checkbox"> Personal interest</label>
+          <label class="check-item"><input type="checkbox"> Manager-assigned</label>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Expected attitude toward training</label>
+        <select>
+          <option value="">— Select —</option>
+          <option>Highly motivated / enthusiastic</option>
+          <option>Generally positive</option>
+          <option>Neutral / indifferent</option>
+          <option>Reluctant / resistant</option>
+          <option>Varies across the group</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label>What's in it for the learner? (WIIFM)</label>
+        <textarea placeholder="Describe tangible or intrinsic benefits learners will gain…"></textarea>
+      </div>
+    </div>
+
+    <!-- SECTION 5: ENVIRONMENT -->
+    <div class="form-section">
+      <div class="section-title"><span class="section-num">5</span> Learning Environment & Constraints</div>
+
+      <div class="two-col">
+        <div class="field-group">
+          <label>Available Technology / Devices</label>
+          <div class="check-grid" style="grid-template-columns:1fr 1fr;">
+            <label class="check-item"><input type="checkbox"> Desktop / laptop</label>
+            <label class="check-item"><input type="checkbox"> Tablet</label>
+            <label class="check-item"><input type="checkbox"> Mobile / smartphone</label>
+            <label class="check-item"><input type="checkbox"> Shared/kiosk devices</label>
+            <label class="check-item"><input type="checkbox"> No reliable device access</label>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>LMS / Platform (if applicable)</label>
+          <input type="text" placeholder="e.g., Cornerstone, Canvas, Moodle, None">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Time & Scheduling Constraints</label>
+        <textarea placeholder="Describe limits on seat time, schedule flexibility, work shifts, etc.…"></textarea>
+      </div>
+
+      <div class="field-group">
+        <label>Accessibility Considerations</label>
+        <textarea placeholder="Screen reader needs, language/translation, closed captions, etc.…"></textarea>
+      </div>
+    </div>
+
+    <!-- SECTION 6: NOTES -->
+    <div class="form-section">
+      <div class="section-title"><span class="section-num">6</span> Additional Notes & Recommendations</div>
+      <div class="field-group">
+        <textarea style="min-height:120px;" placeholder="Summarize key insights from this analysis and their design implications…"></textarea>
+      </div>
+    </div>
+
+    <!-- SECTION 7: SIGN-OFF -->
+    <div class="form-section">
+      <div class="section-title"><span class="section-num">7</span> Sign-Off & Approval</div>
+
+      <div class="two-col">
+        <div class="field-group">
+          <label>Instructional Designer Signature</label>
+          <input type="text" placeholder="Type name as signature">
+        </div>
+        <div class="field-group">
+          <label>Date</label>
+          <input type="date">
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="field-group">
+          <label>Stakeholder / Client Approval</label>
+          <input type="text" placeholder="Approver name">
+        </div>
+        <div class="field-group">
+          <label>Date</label>
+          <input type="date">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Additional Notes / Conditions of Approval</label>
+        <textarea placeholder="Any caveats, revisions, or conditions noted by approver…"></textarea>
+      </div>
+    </div>
+
+    <div class="form-footer">
+      <span class="footer-note">Complete this form before beginning instructional design work.</span>
+      <button class="btn-clear" onclick="clearForm('tab-learner')">Clear Form</button>
+    </div>
+
+  </div>
+</div><!-- /tab-learner -->
+
+
+<!-- ════════════════════════════════════════
+     NEEDS ASSESSMENT
+════════════════════════════════════════ -->
+<div id="tab-needs" class="tab-panel">
+
+  <div class="masthead">
+    <div class="masthead-left">
+      <div class="form-eyebrow">Instructional Design Portfolio</div>
+      <h1>Needs Assessment</h1>
+      <div class="masthead-rule"></div>
+      <p>Diagnose the performance gap and confirm whether training is the right solution before designing anything.</p>
+    </div>
+    <button class="print-btn" onclick="window.print()">⬇ Print / Save PDF</button>
+  </div>
+
+  <div class="form-wrapper">
+
+    <!-- SECTION 1: PROJECT INFO -->
+    <div class="form-section">
+      <div class="section-title"><span class="section-num">1</span> Project Information</div>
+
+      <div class="two-col">
+        <div class="field-group">
+          <label>Project Title <span class="required-star">*</span></label>
+          <input type="text" placeholder="Brief descriptive title">
+        </div>
+        <div class="field-group">
+          <label>Instructional Designer</label>
+          <input type="text" placeholder="Your name">
+        </div>
+      </div>
+
+      <div class="three-col">
+        <div class="field-group">
+          <label>Date Completed</label>
+          <input type="date">
+        </div>
+        <div class="field-group">
+          <label>Requesting Department / Client</label>
+          <input type="text" placeholder="Who initiated this request?">
+        </div>
+        <div class="field-group">
+          <label>Priority Level</label>
+          <select>
+            <option value="">— Select —</option>
+            <option>Critical — immediate action needed</option>
+            <option>High — address within 30 days</option>
+            <option>Medium — address within quarter</option>
+            <option>Low — future consideration</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: PROBLEM STATEMENT -->
+    <div class="form-section">
+      <div class="section-title"><span class="section-num">2</span> Problem / Opportunity Statement</div>
+
+      <div class="field-group">
+        <label>Describe the business problem or opportunity driving this request</label>
+        <textarea placeholder="What triggered this request? What issue has been observed or reported?"></textarea>
+      </div>
+
+      <div class="two-col">
+        <div class="field-group">
+          <label>Desired / Optimal Performance <span class="required-star">*</span></label>
+          <textarea placeholder="What should employees be doing? What does 'good' look like?"></textarea>
+          <p class="helper">The standard, benchmark, or expected outcome</p>
+        </div>
+        <div class="field-group">
+          <label>Actual / Current Performance <span class="required-star">*</span></label>
+          <textarea placeholder="What are employees currently doing (or not doing)?"></textarea>
+          <p class="helper">Observable behavior today</p>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Performance Gap (Desired – Actual)</label>
+        <textarea placeholder="Summarize the gap between where things are and where they need to be…"></textarea>
+      </div>
+    </div>
+
+    <!-- SECTION 3: CAUSE ANALYSIS -->
+    <div class="form-section">
+      <div class="section-title"><span class="section-num">3</span> Root Cause Analysis</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Select all likely causes and describe their impact below.</p>
+
+      <table class="scale-table">
+        <thead>
+          <tr>
+            <th style="width:40%">Possible Cause</th>
+            <th>Not a Factor</th>
+            <th>Minor Factor</th>
+            <th>Moderate Factor</th>
+            <th>Major Factor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Lack of knowledge or skills</td>
+            <td><input type="radio" name="c1" value="1"></td>
+            <td><input type="radio" name="c1" value="2"></td>
+            <td><input type="radio" name="c1" value="3"></td>
+            <td><input type="radio" name="c1" value="4"></td>
+          </tr>
+          <tr>
+            <td>Unclear expectations / standards</td>
+            <td><input type="radio" name="c2" value="1"></td>
+            <td><input type="radio" name="c2" value="2"></td>
+            <td><input type="radio" name="c2" value="3"></td>
+            <td><input type="radio" name="c2" value="4"></td>
+          </tr>
+          <tr>
+            <td>Lack of feedback or coaching</td>
+            <td><input type="radio" name="c3" value="1"></td>
+            <td><input type="radio" name="c3" value="2"></td>
+            <td><input type="radio" name="c3" value="3"></td>
+            <td><input type="radio" name="c3" value="4"></td>
+          </tr>
+          <tr>
+            <td>Environmental / process barriers</td>
+            <td><input type="radio" name="c4" value="1"></td>
+            <td><input type="radio" name="c4" value="2"></td>
+            <td><input type="radio" name="c4" value="3"></td>
+            <td><input type="radio" name="c4" value="4"></td>
+          </tr>
+          <tr>
+            <td>Insufficient motivation / incentive</td>
+            <td><input type="radio" name="c5" value="1"></td>
+            <td><input type="radio" name="c5" value="2"></td>
+            <td><input type="radio" name="c5" value="3"></td>
+            <td><input type="radio" name="c5" value="4"></td>
+          </tr>
+          <tr>
+            <td>Inadequate tools / resources</td>
+            <td><input type="radio" name="c6" value="1"></td>
+            <td><input type="radio" name="c6" value="2"></td>
+            <td><input type="radio" name="c6" value="3"></td>
+            <td><input type="radio" name="c6" value="4"></td>
+          </tr>
+          <tr>
+            <td>Organizational / cultural factors</td>
+            <td><input type="radio" name="c7" value="1"></td>
+            <td><input type="radio" name="c7" value="2"></td>
+            <td><input type="radio" name="c7" value="3"></td>
+            <td><input type="radio" name="c7" value="4"></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="field-group" style="margin-top:14px;">
+        <label>Describe root cause findings</label>
+        <textarea placeholder="Summarize evidence gathered (interviews, observations, data) that supports the cause analysis…"></textarea>
+      </div>
+    </div>
+
+    <!-- SECTION 4: DATA SOURCES -->
+    <div class="form-section">
+      <div class="section-title"><span class="section-num">4</span> Data Gathering Methods Used</div>
+
+      <div class="field-group">
+        <label>How was data collected for this assessment? (select all that apply)</label>
+        <div class="check-grid">
+          <label class="check-item"><input type="checkbox"> Stakeholder interviews</label>
+          <label class="check-item"><input type="checkbox"> Learner surveys / questionnaires</label>
+          <label class="check-item"><input type="checkbox"> Focus groups</label>
+          <label class="check-item"><input type="checkbox"> Observation / job shadowing</label>
+          <label class="check-item"><input type="checkbox"> Performance data / metrics</label>
+          <label class="check-item"><input type="checkbox"> Document / policy review</label>
+          <label class="check-item"><input type="checkbox"> Subject matter expert consultation</label>
+          <label class="check-item"><input type="checkbox"> Other</label>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Key Stakeholders Consulted</label>
+        <textarea placeholder="List names, titles, or roles of people interviewed or surveyed…"></textarea>
+      </div>
+    </div>
+
+    <!-- SECTION 5: SOLUTION RECOMMENDATION -->
+    <div class="form-section">
+      <div class="section-title"><span class="section-num">5</span> Recommended Solution</div>
+
+      <div class="field-group">
+        <label>Is training the right solution?</label>
+        <select>
+          <option value="">— Select —</option>
+          <option>Yes — training is the primary solution</option>
+          <option>Partial — training combined with non-training interventions</option>
+          <option>No — non-training solution recommended</option>
+          <option>Unclear — further investigation needed</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label>Proposed Intervention(s)</label>
+        <div class="check-grid">
+          <label class="check-item"><input type="checkbox"> eLearning module</label>
+          <label class="check-item"><input type="checkbox"> Instructor-led training</label>
+          <label class="check-item"><input type="checkbox"> Job aid / quick reference</label>
+          <label class="check-item"><input type="checkbox"> Coaching / mentoring</label>
+          <label class="check-item"><input type="checkbox"> Process / policy revision</label>
+          <label class="check-item"><input type="checkbox"> Performance support tool</label>
+          <label class="check-item"><input type="checkbox"> Role clarification</label>
+          <label class="check-item"><input type="checkbox"> Incentive / motivation change</label>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Rationale for Recommendation</label>
+        <textarea style="min-height:100px;" placeholder="Explain why this solution best addresses the root cause and performance gap…"></textarea>
+      </div>
+    </div>
+
+    <!-- SECTION 6: SUCCESS METRICS -->
+    <div class="form-section">
+      <div class="section-title"><span class="section-num">6</span> Expected Outcomes & Success Metrics</div>
+
+      <div class="field-group">
+        <label>How will success be measured?</label>
+        <textarea placeholder="e.g., 90% learner pass rate, 20% reduction in errors, manager observation scores, etc.…"></textarea>
+      </div>
+
+      <div class="two-col">
+        <div class="field-group">
+          <label>Target Completion Date</label>
+          <input type="date">
+        </div>
+        <div class="field-group">
+          <label>Estimated Budget / Resources</label>
+          <input type="text" placeholder="Dollar amount or resource scope">
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 7: SIGN-OFF -->
+    <div class="form-section">
+      <div class="section-title"><span class="section-num">7</span> Sign-Off & Approval</div>
+
+      <div class="two-col">
+        <div class="field-group">
+          <label>Instructional Designer Signature</label>
+          <input type="text" placeholder="Type name as signature">
+        </div>
+        <div class="field-group">
+          <label>Date</label>
+          <input type="date">
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="field-group">
+          <label>Stakeholder / Client Approval</label>
+          <input type="text" placeholder="Approver name">
+        </div>
+        <div class="field-group">
+          <label>Date</label>
+          <input type="date">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Additional Notes / Conditions of Approval</label>
+        <textarea placeholder="Any caveats, revisions, or conditions noted by approver…"></textarea>
+      </div>
+    </div>
+
+    <div class="form-footer">
+      <span class="footer-note">Complete before beginning instructional design or development.</span>
+      <button class="btn-clear" onclick="clearForm('tab-needs')">Clear Form</button>
+    </div>
+
+  </div>
+</div><!-- /tab-needs -->
+
+<script>
+  function switchTab(name) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
+
+  function clearForm(panelId) {
+    const panel = document.getElementById(panelId);
+    panel.querySelectorAll('input[type="text"], input[type="date"], textarea').forEach(el => el.value = '');
+    panel.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+    panel.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(el => el.checked = false);
+  }
+</script>
+</body>
+</html>
