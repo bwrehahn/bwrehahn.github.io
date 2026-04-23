@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Handling a Difficult Customer Interaction – Job Aid</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #0f1e35; --navy-mid: #1a2f4a;
+  --accent: #e85c2b; --accent-light: #f2784f;
+  --teal: #1a9e8c; --teal-light: #22c4ae;
+  --gold: #d4a017; --blue-node: #6c8ebf;
+  --surface: #f7f5f0; --surface2: #edeae3;
+  --text: #1a1a1a; --text-muted: #5a5a5a;
+  --white: #ffffff;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--surface); color: var(--text); min-height: 100vh; }
+.ja-header { background: var(--navy); color: var(--white); padding: 20px 28px 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.ja-header-left { display: flex; align-items: center; gap: 14px; }
+.ja-logo { width: 36px; height: 36px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ja-logo svg { width: 18px; height: 18px; }
+.ja-title { font-size: 15px; font-weight: 600; color: var(--white); line-height: 1.2; }
+.ja-sub { font-size: 11px; font-weight: 400; color: rgba(255,255,255,0.55); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
+.ja-badge { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 3px 8px; letter-spacing: 0.08em; white-space: nowrap; }
+.ja-legend { display: flex; gap: 20px; align-items: center; padding: 10px 28px; background: var(--navy-mid); border-bottom: 1px solid rgba(255,255,255,0.08); }
+.ja-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: rgba(255,255,255,0.55); letter-spacing: 0.04em; }
+.leg-dot { width: 8px; height: 8px; border-radius: 50%; }
+.leg-dot.start { background: var(--accent); }
+.leg-dot.decision { background: var(--gold); }
+.leg-dot.action { background: var(--teal); }
+.leg-dot.outcome { background: #6c8ebf; }
+.ja-body { padding: 24px 28px 32px; max-width: 680px; margin: 0 auto; }
+.ja-progress { display: flex; align-items: center; gap: 0; margin-bottom: 24px; overflow-x: auto; padding-bottom: 4px; }
+.prog-step { display: flex; align-items: center; gap: 0; flex-shrink: 0; }
+.prog-node { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; font-family: 'DM Mono', monospace; border: 2px solid var(--surface2); background: var(--white); color: var(--text-muted); transition: all 0.25s; position: relative; z-index: 1; }
+.prog-node.active { background: var(--accent); border-color: var(--accent); color: var(--white); box-shadow: 0 0 0 3px rgba(232,92,43,0.2); }
+.prog-node.done { background: var(--teal); border-color: var(--teal); color: var(--white); }
+.prog-line { height: 2px; width: 32px; background: var(--surface2); transition: background 0.3s; flex-shrink: 0; }
+.prog-line.done { background: var(--teal); }
+.ja-card { background: var(--white); border-radius: 12px; box-shadow: 0 2px 12px rgba(15,30,53,0.10); border: 1px solid rgba(0,0,0,0.06); overflow: hidden; margin-bottom: 16px; animation: slideIn 0.22s ease; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.card-type-bar { height: 4px; width: 100%; }
+.type-start .card-type-bar { background: var(--accent); }
+.type-decision .card-type-bar { background: var(--gold); }
+.type-action .card-type-bar { background: var(--teal); }
+.type-outcome .card-type-bar { background: #6c8ebf; }
+.card-inner { padding: 18px 20px 16px; }
+.card-label { font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 6px; font-family: 'DM Mono', monospace; }
+.type-start .card-label { color: var(--accent); }
+.type-decision .card-label { color: var(--gold); }
+.type-action .card-label { color: var(--teal); }
+.type-outcome .card-label { color: #6c8ebf; }
+.card-title { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.35; margin-bottom: 10px; }
+.card-body { font-size: 13px; line-height: 1.65; color: var(--text-muted); margin-bottom: 14px; }
+.card-tip { display: flex; gap: 8px; align-items: flex-start; background: #fff8f2; border-left: 3px solid var(--accent-light); border-radius: 0 6px 6px 0; padding: 10px 12px; font-size: 12px; color: var(--text-muted); line-height: 1.55; margin-bottom: 14px; }
+.card-tip-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+.card-options { display: flex; flex-direction: column; gap: 8px; }
+.opt-btn { display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; border-radius: 8px; border: 1.5px solid var(--surface2); background: var(--surface); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--text); cursor: pointer; text-align: left; transition: all 0.18s; gap: 10px; }
+.opt-btn:hover { border-color: var(--accent); background: #fff6f3; color: var(--accent); transform: translateX(2px); }
+.opt-btn .opt-arrow { font-size: 14px; color: var(--text-muted); flex-shrink: 0; transition: color 0.18s; }
+.opt-btn:hover .opt-arrow { color: var(--accent); }
+.opt-yes { border-color: rgba(26,158,140,0.3); }
+.opt-yes:hover { border-color: var(--teal); background: #f0faf8; color: var(--teal); }
+.opt-yes:hover .opt-arrow { color: var(--teal); }
+.opt-no { border-color: rgba(212,160,23,0.3); }
+.opt-no:hover { border-color: var(--gold); background: #fffbf0; color: var(--gold); }
+.opt-no:hover .opt-arrow { color: var(--gold); }
+.outcome-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 12px; }
+.outcome-success { background: #f0faf8; }
+.outcome-escalate { background: #fff3cd; }
+.outcome-title { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.outcome-steps { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.outcome-steps li { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+.step-num { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; margin-top: 1px; font-family: 'DM Mono', monospace; }
+.num-teal { background: var(--teal-light); color: var(--white); }
+.num-gold { background: var(--gold); color: var(--white); }
+.card-nav { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+.btn-back { display: flex; align-items: center; gap: 5px; padding: 8px 14px; border-radius: 7px; border: 1px solid var(--surface2); background: transparent; font-family: 'DM Sans', sans-serif; font-size: 12px; color: var(--text-muted); cursor: pointer; transition: all 0.18s; }
+.btn-back:hover { border-color: var(--text-muted); color: var(--text); }
+.btn-restart { display: flex; align-items: center; gap: 5px; padding: 8px 16px; border-radius: 7px; border: none; background: var(--navy); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; color: var(--white); cursor: pointer; transition: all 0.18s; }
+.btn-restart:hover { background: var(--accent); }
+.ja-quickref { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+.qr-card { background: var(--white); border-radius: 10px; border: 1px solid rgba(0,0,0,0.06); padding: 14px 16px; box-shadow: 0 2px 12px rgba(15,30,53,0.10); }
+.qr-label { font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; font-family: 'DM Mono', monospace; }
+.qr-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.qr-list li { font-size: 12px; color: var(--text-muted); line-height: 1.4; display: flex; gap: 6px; }
+.qr-bullet { color: var(--accent); font-size: 10px; margin-top: 3px; flex-shrink: 0; }
+.ja-section-label { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; font-family: 'DM Mono', monospace; }
+</style>
+</head>
+<body>
+
+<div class="ja-header">
+  <div class="ja-header-left">
+    <div class="ja-logo">
+      <svg viewBox="0 0 18 18" fill="none">
+        <circle cx="9" cy="9" r="7.5" stroke="white" stroke-width="1.5"/>
+        <path d="M6 9l2 2 4-4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="ja-title">Handling a Difficult Customer Interaction</div>
+      <div class="ja-sub">Customer Service · Job Aid</div>
+    </div>
+  </div>
+  <div class="ja-badge">JA-CS-001</div>
+</div>
+
+<div class="ja-legend">
+  <span class="ja-legend-item"><span class="leg-dot start"></span>Start</span>
+  <span class="ja-legend-item"><span class="leg-dot decision"></span>Decision</span>
+  <span class="ja-legend-item"><span class="leg-dot action"></span>Action</span>
+  <span class="ja-legend-item"><span class="leg-dot outcome"></span>Outcome</span>
+</div>
+
+<div class="ja-body">
+  <div class="ja-progress" id="progress-bar"></div>
+  <div id="card-area"></div>
+
+  <div style="margin-top:24px;">
+    <div class="ja-section-label">Quick Reference — De-escalation Phrases</div>
+    <div class="ja-quickref">
+      <div class="qr-card">
+        <div class="qr-label">Open with empathy</div>
+        <ul class="qr-list">
+          <li><span class="qr-bullet">▸</span>"I completely understand why you're frustrated."</li>
+          <li><span class="qr-bullet">▸</span>"Thank you for bringing this to my attention."</li>
+          <li><span class="qr-bullet">▸</span>"I can see this has caused a real inconvenience."</li>
+        </ul>
+      </div>
+      <div class="qr-card">
+        <div class="qr-label">Offer ownership</div>
+        <ul class="qr-list">
+          <li><span class="qr-bullet">▸</span>"I'm going to take personal responsibility for this."</li>
+          <li><span class="qr-bullet">▸</span>"Let me find out exactly what happened."</li>
+          <li><span class="qr-bullet">▸</span>"Here's what I can do for you right now."</li>
+        </ul>
+      </div>
+      <div class="qr-card">
+        <div class="qr-label">When you need time</div>
+        <ul class="qr-list">
+          <li><span class="qr-bullet">▸</span>"I want to make sure I handle this correctly for you."</li>
+          <li><span class="qr-bullet">▸</span>"Can I place you on a brief hold while I check?"</li>
+          <li><span class="qr-bullet">▸</span>"I'll follow up within [timeframe] — is that okay?"</li>
+        </ul>
+      </div>
+      <div class="qr-card">
+        <div class="qr-label" style="color:#cc4444;">Phrases to avoid</div>
+        <ul class="qr-list">
+          <li><span class="qr-bullet" style="color:#cc4444;">✕</span>"That's our policy." (without context)</li>
+          <li><span class="qr-bullet" style="color:#cc4444;">✕</span>"There's nothing I can do."</li>
+          <li><span class="qr-bullet" style="color:#cc4444;">✕</span>"You should have…" or "You need to…"</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const nodes = {
+  start: { id:'start', type:'start', label:'Situation', title:'Customer appears upset or difficult', body:'A customer has contacted you and is showing signs of frustration, anger, or dissatisfaction. Before reacting, pause and assess.', tip:'Take a breath. Your calm is contagious — your composure directly influences how the interaction unfolds.', options:[{text:'Are they venting, or do they have a specific complaint?',next:'q_type',class:''}] },
+  q_type: { id:'q_type', type:'decision', label:'Decision', title:'What is the nature of the interaction?', body:'Identify whether the customer is primarily emotional and needs to be heard, or whether there is a concrete, solvable problem.', options:[{text:'They have a specific complaint or request',next:'acknowledge',class:'opt-yes'},{text:'They are venting / emotional with no clear ask',next:'listen',class:'opt-no'}] },
+  listen: { id:'listen', type:'action', label:'Action', title:'Listen actively — don\'t rush to solve', body:'Let the customer speak without interruption. Use verbal affirmations ("I see," "I understand") and reflect back what you hear.', tip:'People who feel heard are significantly easier to help. Resist the urge to jump to solutions too soon.', options:[{text:'They\'ve calmed and revealed a specific need',next:'acknowledge',class:'opt-yes'},{text:'They remain escalated after listening',next:'q_escalate',class:'opt-no'}] },
+  acknowledge: { id:'acknowledge', type:'action', label:'Action', title:'Acknowledge and validate the concern', body:'Restate the customer\'s issue in your own words to confirm understanding. Apologize for the impact — even if the cause was outside your control.', tip:'An apology for the experience ("I\'m sorry this happened") differs from admitting fault. Always lead with one.', options:[{text:'Is the issue something you can resolve directly?',next:'q_resolve',class:''}] },
+  q_resolve: { id:'q_resolve', type:'decision', label:'Decision', title:'Can you resolve this issue right now?', body:'Assess whether the fix is within your authority and can be completed during this interaction.', options:[{text:'Yes — I have the authority and information to fix this',next:'resolve',class:'opt-yes'},{text:'No — it requires more time, info, or another team',next:'q_escalate',class:'opt-no'}] },
+  resolve: { id:'resolve', type:'action', label:'Action', title:'Offer a clear resolution', body:'Explain exactly what you will do and when. Confirm the customer agrees with the proposed solution before proceeding.', tip:'Be specific: "I will issue your refund now and you should see it within 3–5 business days" beats "We\'ll take care of it."', options:[{text:'Customer accepts the resolution',next:'outcome_resolved',class:'opt-yes'},{text:'Customer is still dissatisfied',next:'q_escalate',class:'opt-no'}] },
+  q_escalate: { id:'q_escalate', type:'decision', label:'Decision', title:'Does this situation require escalation?', body:'Consider: Is the customer requesting a supervisor? Is the issue outside your authority? Is safety a concern?', options:[{text:'Yes — escalation is needed',next:'escalate',class:'opt-yes'},{text:'No — I can still manage this with more time',next:'acknowledge',class:'opt-no'}] },
+  escalate: { id:'escalate', type:'action', label:'Action', title:'Escalate professionally', body:'Inform the customer calmly that you are escalating to ensure they get the best possible help. Brief the next contact with full context — never make the customer repeat themselves.', tip:'Frame escalation as a benefit: "I want to connect you with someone who can get this fully resolved for you."', options:[{text:'Next steps taken — document the interaction',next:'outcome_escalated',class:''}] },
+  outcome_resolved: { id:'outcome_resolved', type:'outcome', label:'Outcome', outcomeType:'success', title:'Issue resolved successfully', steps:[{text:'Confirm the customer is satisfied before closing',color:'teal'},{text:'Thank them for their patience and for raising the issue',color:'teal'},{text:'Document the interaction, resolution, and any follow-up',color:'teal'},{text:'Note any process improvement opportunities',color:'teal'}] },
+  outcome_escalated: { id:'outcome_escalated', type:'outcome', label:'Outcome', outcomeType:'escalate', title:'Escalation completed', steps:[{text:'Provide full context to the receiving team — customer name, issue, history',color:'gold'},{text:'Confirm the handoff with the customer and set expectations',color:'gold'},{text:'Log all details: time, issue, actions taken, escalation path',color:'gold'},{text:'Follow up if ownership of outcome is still yours',color:'gold'}] }
+};
+
+let history = ['start'];
+
+function renderProgress() {
+  const bar = document.getElementById('progress-bar');
+  const maxSteps = 6;
+  const current = Math.min(history.length, maxSteps);
+  let html = '';
+  for (let i = 1; i <= maxSteps; i++) {
+    const state = i < current ? 'done' : i === current ? 'active' : '';
+    html += `<div class="prog-step"><div class="prog-node ${state}">${i}</div>`;
+    if (i < maxSteps) html += `<div class="prog-line ${i < current ? 'done' : ''}"></div>`;
+    html += `</div>`;
+  }
+  bar.innerHTML = html;
+}
+
+function renderCard() {
+  const node = nodes[history[history.length - 1]];
+  const area = document.getElementById('card-area');
+  let html = `<div class="ja-card type-${node.type}"><div class="card-type-bar"></div><div class="card-inner">`;
+  html += `<div class="card-label">${node.label}</div><div class="card-title">${node.title}</div>`;
+  if (node.body) html += `<div class="card-body">${node.body}</div>`;
+  if (node.tip) html += `<div class="card-tip"><span class="card-tip-icon">💡</span><span>${node.tip}</span></div>`;
+  if (node.type === 'outcome') {
+    const icons = {success:'✅',escalate:'🔁'};
+    const bgs = {success:'outcome-success',escalate:'outcome-escalate'};
+    html += `<div class="outcome-icon ${bgs[node.outcomeType]}">${icons[node.outcomeType]}</div>`;
+    html += `<div class="outcome-title">${node.title}</div><ul class="outcome-steps">`;
+    node.steps.forEach((s,i) => { html += `<li><span class="step-num num-${s.color}">${i+1}</span>${s.text}</li>`; });
+    html += `</ul><div class="card-nav">`;
+    if (history.length > 1) html += `<button class="btn-back" onclick="goBack()">← Back</button>`;
+    html += `<button class="btn-restart" onclick="restart()">↺ Start over</button></div>`;
+  } else if (node.options) {
+    html += `<div class="card-options">`;
+    node.options.forEach(opt => { html += `<button class="opt-btn ${opt.class||''}" onclick="navigate('${opt.next}')"><span>${opt.text}</span><span class="opt-arrow">→</span></button>`; });
+    html += `</div>`;
+    if (history.length > 1) html += `<div class="card-nav" style="margin-top:12px;"><button class="btn-back" onclick="goBack()">← Back</button></div>`;
+  }
+  html += `</div></div>`;
+  area.innerHTML = html;
+}
+
+function navigate(id) { history.push(id); renderProgress(); renderCard(); }
+function goBack() { if (history.length > 1) { history.pop(); renderProgress(); renderCard(); } }
+function restart() { history = ['start']; renderProgress(); renderCard(); }
+
+renderProgress();
+renderCard();
+</script>
+</body>
+</html>
