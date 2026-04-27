@@ -1,0 +1,100 @@
+@charset "UTF-8";
+<style type="text/css">
+#container {
+	background-color: #FFF;
+	width: 1200px;
+	margin-right: auto;
+	margin-left: auto;
+	margin-top: 0px;
+}
+#footer {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	color: #FFF;
+	background-color: #000;
+	text-align: center;
+	height: 30px;
+	background-image: url(images/footergradient.png);
+	background-repeat: repeat-x;
+dient.png); */
+	/* [disabled]background-repeat: repeat-x; */
+}
+body {
+	/* [disabled]background-color: #000; */
+	/* [disabled]background-image: url(../images/gradient.png); */
+	background-repeat: repeat-x;
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+}
+.top {
+	background-color: #FFF;
+}
+.top #header {
+	width: 1200px;
+	margin-right: auto;
+	margin-left: auto;
+	background-image: url(images/header.png);
+	height: 200px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 55pt;
+	color: #990000;
+}
+#container #content {
+	clear: both;
+	padding-top: 25px;
+	padding-right: 10px;
+	padding-bottom: 10px;
+	padding-left: 10px;
+}
+.top .navcontainer {
+	background-color: #990000;
+}
+.top .navcontainer #navigation {
+	width: 1200px;
+	margin-right: auto;
+	margin-left: auto;
+}
+
+
+#container #content ol li {
+	padding-top: 10px;
+}
+#container #content hr {
+	color: #900;
+}
+#container #navigation {
+	background-color: #900;
+	width: 100%;
+	height: 50px;
+}
+#H1 {
+	color: #900;
+	font-family: "Arial Black", Gadget, sans-serif;
+}
+a {
+	color: #900;
+}
+#container #content h3 {
+	color: #900;
+}
+#container #content h2 {
+	color: #900;
+}
+#container h2 {
+	color: #990000;
+}
+
+#container h3 {
+	color: #990000;
+}
+#container #content #form1 p label {
+	font-weight: bold;
+	color: #900;
+}
+#container #content #form1 p {
+	font-weight: bold;
+	color: #900;
+}
+</style>
