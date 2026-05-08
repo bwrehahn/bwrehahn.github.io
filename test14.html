@@ -24,7 +24,6 @@
             background-color: var(--body-bg);
             color: #1e293b;
             line-height: 1.6;
-            overflow-x: hidden; /* Prevents horizontal scroll bugs */
         }
 
         nav {
@@ -49,7 +48,7 @@
         }
 
         .hero {
-            padding: 80px 10%;
+            padding: 60px 10%;
             background: linear-gradient(-45deg, #000000, #1e293b, #0f172a, #000000);
             background-size: 400% 400%;
             animation: gradientShift 12s ease infinite;
@@ -75,12 +74,12 @@
         .skills-bar {
             max-width: 1100px;
             margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            align-items: start;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
         }
 
-        .skill-item { text-align: center; padding: 0 20px; }
+        .skill-item { text-align: center; padding: 0 20px; flex: 1; }
         .skill-item:not(:last-child) { border-right: 1px solid #e2e8f0; }
         .skill-item h4 { 
             color: var(--accent-blue); 
@@ -92,12 +91,12 @@
         .skill-item p { font-size: 0.85rem; font-weight: 500; margin: 0; }
 
         .container {
-            padding: 80px 5%;
+            padding: 60px 5%;
             max-width: 1200px;
             margin: auto;
         }
 
-        .section-title { font-size: 1.8rem; margin-bottom: 40px; text-align: center; font-weight: 700; }
+        .section-title { font-size: 1.8rem; margin-bottom: 40px; text-align: center; }
 
         .grid {
             display: grid;
@@ -116,25 +115,32 @@
             flex-direction: column;
         }
 
-        /* FIXED: The Background Image Method */
-        .card-image-box {
+        /* FIXED: Shrinks image to fit without cutting off edges */
+        .card-image-wrapper {
             width: 100%;
-            aspect-ratio: 16 / 9; /* Strictly defines the shape */
-            background-size: cover; /* Crops the image to fit */
-            background-position: center;
-            background-repeat: no-repeat;
+            height: 220px; /* Fixed height for the box */
+            background-color: #f1f5f9; /* Soft background if image doesn't fill the space */
+            display: flex;
+            justify-content: center;
+            align-items: center;
             border-bottom: 1px solid #e2e8f0;
-            background-color: #1e293b; /* Fallback if image fails */
         }
 
-        .card-content { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
+        .card-image { 
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* The key: shrinks to fit, NO cropping */
+            display: block;
+        }
+
+        .card-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
         .card-content h3 { margin: 0 0 10px 0; font-size: 1.1rem; }
-        .card-content p { font-size: 0.85rem; color: #64748b; margin-bottom: 25px; flex-grow: 1; }
+        .card-content p { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; flex-grow: 1; }
 
         .btn {
             display: inline-block;
             align-self: flex-start;
-            padding: 10px 20px;
+            padding: 10px 18px;
             background-color: #000;
             color: #fff;
             text-decoration: none;
@@ -149,7 +155,7 @@
         .contact-section { 
             background-color: #ffffff; 
             border-top: 1px solid #e2e8f0; 
-            padding: 80px 5%; 
+            padding: 60px 5%; 
             text-align: center;
         }
         
@@ -167,14 +173,15 @@
             border-bottom: 2px solid var(--accent-blue);
         }
 
-        footer { text-align: center; padding: 40px; background: #000; color: #666; font-size: 0.75rem; }
+        footer { text-align: center; padding: 30px; background: #000; color: #666; font-size: 0.75rem; }
 
-        /* Responsive */
         @media (max-width: 1024px) { .grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 768px) {
-            .skills-bar { grid-template-columns: 1fr; gap: 30px; }
-            .skill-item:not(:last-child) { border-right: none; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; }
+            .skills-bar { flex-direction: column; gap: 30px; align-items: center; }
+            .skill-item { border-right: none !important; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; width: 100%; }
+            .skill-item:last-child { border-bottom: none; }
             .grid { grid-template-columns: 1fr; }
+            .contact-links { flex-direction: column; gap: 20px; }
         }
     </style>
 </head>
@@ -192,7 +199,7 @@
 
     <header class="hero" id="hero">
         <h1>Brad Rehahn</h1>
-        <p>Instructional Designer creating interactive learning that improves performance. Over 15 years of experience designing eLearning solutions with Articulate Storyline, Rise 360, and Adobe Creative Suite.</p>
+        <p>Instructional Designer creating interactive learning that improves performance. 15+ years of experience designing eLearning and multimedia training solutions.</p>
     </header>
 
     <div class="skills-wrapper" id="skills">
@@ -215,68 +222,72 @@
     <div class="container" id="projects">
         <h2 class="section-title">Case Studies</h2>
         <div class="grid">
-            
             <div class="card">
-                <div class="card-image-box" style="background-image: url('state-park-thumb.jpg');"></div>
+                <div class="card-image-wrapper">
+                    <img src="state-park-thumb.jpg" class="card-image" alt="Illinois State Parks">
+                </div>
                 <div class="card-content">
                     <h3>Illinois State Parks</h3>
                     <p>10-minute interactive module promoting safe hiking practices.</p>
                     <a href="state-park.html" class="btn">View Project</a>
                 </div>
             </div>
-
             <div class="card">
-                <div class="card-image-box" style="background-image: url('placeholder2.jpg');"></div>
+                <div class="card-image-wrapper">
+                    <img src="placeholder2.jpg" class="card-image" alt="Project 2">
+                </div>
                 <div class="card-content">
                     <h3>Visual Asset Design</h3>
                     <p>Custom media production and asset libraries for corporate training.</p>
                     <a href="#" class="btn">View Project</a>
                 </div>
             </div>
-
             <div class="card">
-                <div class="card-image-box" style="background-image: url('placeholder3.jpg');"></div>
+                <div class="card-image-wrapper">
+                    <img src="placeholder3.jpg" class="card-image" alt="Project 3">
+                </div>
                 <div class="card-content">
                     <h3>Needs Assessment</h3>
                     <p>Strategy and analysis for large-scale corporate initiatives.</p>
                     <a href="#" class="btn">View Project</a>
                 </div>
             </div>
-
         </div>
     </div>
 
     <div class="container" id="academic">
         <h2 class="section-title">Academic Work</h2>
         <div class="grid">
-            
             <div class="card">
-                <div class="card-image-box" style="background-image: url('images/State-park.jpg');"></div>
+                <div class="card-image-wrapper">
+                    <img src="images/State-park.jpg" class="card-image" alt="Illinois State Parks">
+                </div>
                 <div class="card-content">
                     <h3>Graduate Research</h3>
                     <p>Analysis of interactive media efficacy in public safety education.</p>
                     <a href="state-park.html" class="btn">View Project</a>
                 </div>
             </div>
-
             <div class="card">
-                <div class="card-image-box" style="background-image: url('placeholder2.jpg');"></div>
+                <div class="card-image-wrapper">
+                    <img src="placeholder2.jpg" class="card-image" alt="Academic 2">
+                </div>
                 <div class="card-content">
                     <h3>Curriculum Design</h3>
                     <p>Development of blended learning models for higher ed environments.</p>
                     <a href="#" class="btn">View Project</a>
                 </div>
             </div>
-
             <div class="card">
-                <div class="card-image-box" style="background-image: url('placeholder3.jpg');"></div>
+                <div class="card-image-wrapper">
+                    <img src="placeholder3.jpg" class="card-image" alt="Academic 3">
+                </div>
                 <div class="card-content">
                     <h3>Learning Theories</h3>
                     <p>A comprehensive review of cognitive load theory in digital learning.</p>
                     <a href="#" class="btn">View Project</a>
                 </div>
             </div>
-
         </div>
     </div>
 
