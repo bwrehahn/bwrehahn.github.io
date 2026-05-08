@@ -1,88 +1,240 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Project 1 - eLearning Module</title>
-  <link rel="icon" type="image/x-icon" href="BR_favicon.ico">
-  <link rel="stylesheet" href="css/style.css">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conflict Management eLearning</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-/* Navbar */
-nav {
-    position: fixed;
-    top:0;
-    width:100%;
-    background:#ffffffcc;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    display:flex;
-    justify-content:center;
-    z-index:1000;
-}
-nav ul { display:flex; list-style:none; margin:0; padding:0; }
-nav ul li { margin:0 15px; }
-nav ul li a { display:block; padding:15px 0; color:#333; font-weight:bold; text-decoration:none; transition:0.3s; }
-nav ul li a:hover { color:#2a9df4; }
+        :root {
+            --bg-nav: #000000; 
+            --accent-blue: #3b82f6; 
+            --text-light: #ffffff;
+            --body-bg: #f8fafc;
+        }
 
-    
-  </style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--body-bg);
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        nav {
+            background-color: var(--bg-nav);
+            padding: 1rem 10%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav .nav-links { display: flex; gap: 40px; }
+        nav .nav-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 400;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .project-hero {
+            height: 35vh;
+            background: linear-gradient(-45deg, #000000, #1e293b, #0f172a, #000000);
+            background-size: 400% 400%;
+            animation: gradientShift 12s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .project-hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .project-hero h1 { 
+            font-size: 3rem; 
+            color: white; 
+            position: relative; 
+            z-index: 1;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            margin: 0;
+        }
+
+        .content-container {
+            max-width: 900px;
+            margin: 60px auto;
+            padding: 0 10%;
+        }
+
+        section { margin-bottom: 50px; }
+
+        h2 { 
+            font-size: 1.5rem; 
+            color: #0f172a; 
+            border-bottom: 2px solid var(--accent-blue);
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        /* Screenshot Container - Moved to Top */
+        .screenshot-box {
+            width: 100%;
+            margin-bottom: 50px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            background: #fff;
+        }
+
+        .screenshot-box img {
+            width: 100%;
+            display: block;
+            height: auto;
+        }
+
+        .skills-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            list-style: none;
+            padding: 0;
+        }
+
+        .skills-list li {
+            padding: 8px 15px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .process-flow {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 600;
+            color: var(--accent-blue);
+            flex-wrap: wrap;
+        }
+
+        .process-flow span { color: #64748b; font-weight: 400; }
+
+        /* Unified Project Navigation */
+        .project-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 80px;
+            padding-top: 40px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .nav-btn {
+            text-decoration: none;
+            background: #000;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: background 0.3s, transform 0.2s;
+            display: inline-block;
+        }
+
+        .nav-btn:hover {
+            background: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+
+        footer { text-align: center; padding: 40px; background: #000; color: #666; font-size: 0.8rem; }
+
+        @media (max-width: 600px) {
+            .skills-list { grid-template-columns: 1fr; }
+            .project-hero h1 { font-size: 2rem; }
+            .project-nav { flex-direction: column; gap: 15px; }
+            .nav-btn { width: 100%; text-align: center; box-sizing: border-box; }
+        }
+    </style>
 </head>
-
 <body>
 
-<!-- NAVBAR (reuse same structure) -->
-<nav>
-  <ul>
-    <li><a href="index.html">Home</a></li>
-    <li><a href="index.html#work">Work</a></li>
-    <li><a href="index.html#skills">Skills</a></li>
-    <li><a href="index.html#contact">Contact</a></li>
-  </ul>
-</nav>
+    <nav>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="index.html#skills">Skills</a>
+            <a href="index.html#projects">Featured Work</a>
+	    <a href="index.html#academic">Academic</a>
+            <a href="index.html#contact">Contact</a>
+        </div>
+    </nav>
 
-<section class="container">
- <div class="project-hero">
-    <h1>eLearning Module</h1>
-    <p>Interactive Articulate Storyline module created to promote practices of identifying and dealing with workplace conflict.</p>
-</div>
-  <p>&nbsp;</p>
-  <div style="text-align: center;">
-    <img src="images/conflict-management.JPG" style="max-width:700px; width:100%;">
-</div>
-<p>&nbsp;</p>
-  <p>&nbsp;</p>
-  <h2>My Role</h2>
-  <p>Worked independently to create an interactive eLearning module for businesses to identify and properly handle workplace conflict. The project followed a full instructional design process, including needs assessment, assessment creation, and final development in Articulate Storyline.</p>
-<p>&nbsp;</p>
-  <h2>Skills and Tools Used</h2>
-  <ul>
-    <li>Articulate Storyline</li>
+    <header class="project-hero">
+        <h1>eLearning Module</h1>
+    </header>
+
+    <div class="content-container">
+        
+        <!-- Screenshot First -->
+        <div class="screenshot-box">
+            <img src="images/conflict-managemnet.JPG" alt="Conflict Management eLearning">
+        </div>
+
+        <section>
+            <h2>My Role</h2>
+            <p>Worked independently to create an interactive eLearning module for businesses to identify and properly handle workplace conflict. The project followed a full instructional design process, including needs assessment, assessment creation, and final development in Articulate Storyline.</p>
+</section>
+
+        <section>
+            <h2>Skills and Tools Used</h2>
+            <ul class="skills-list">
+       <li>Articulate Storyline</li>
     <li>Instructional Design</li>
     <li>Needs Assessment</li>
      <li>eLearning Development</li>
-  </ul>
-<p>&nbsp;</p>
-    <h2>Explore the Site</h2>
-   <p> Click <a href="conflict-training/story.html">here</a> to explore the site.</p>
-    
+            </ul>
+        </section>
 
-<p>&nbsp;</p>
-  <p>&nbsp;</p>
+ <section>
+            <h2>Explore the Training</h2>
+            <div class="process-flow">
+                <p> Click <a href="conflict-training/story.html">here</a> to explore the site.</p></div>
+        </section>
 
-  <h2>Process</h2>
-  <p>Planned storyboard → implemented interactions → QA/testing → deployed.</p>
-<p>&nbsp;</p>
-  <p>&nbsp;</p>
-  <p>&nbsp;</p>
- 
-  <div class="button-group">
-    <a href="index.html" class="button back">← Back to Portfolio</a>
-    <a href="cybersecurity.html" class="button next">Next Project →</a>
-  </div>
-</section>
+        <section>
+            <h2>Process</h2>
+            <div class="process-flow">
+                Planned storyboard <span>→</span> implemented interactions <span>→</span> QA/testing <span>→</span> deployed.
+            </div>
+        </section>
 
-<footer>&copy; 2026 Brad Rehahn</footer>
-<button id="backToTop" onclick="scrollToTop()">↑ Top</button>
-<script src="js/scripts.js"></script>
+        <!-- Both buttons now match -->
+        <div class="project-nav">
+            <a href="index.html" class="nav-btn">← Back to Portfolio</a>
+            <a href="instructional-design-video.html" class="nav-btn">Next Project →</a>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2026 | Instructional Designer Portfolio</p>
+    </footer>
+
 </body>
 </html>
