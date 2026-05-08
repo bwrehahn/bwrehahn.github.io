@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brad Rehahn Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-nav: #000000; 
+            --accent-blue: #3b82f6; 
+            --text-light: #ffffff;
+            --body-bg: #f8fafc;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--body-bg);
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        nav {
+            background-color: var(--bg-nav);
+            padding: 1rem 10%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav .nav-links { display: flex; gap: 40px; }
+        nav .nav-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 400;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hero {
+            height: 35vh;
+            background: linear-gradient(-45deg, #000000, #1e293b, #0f172a, #000000);
+            background-size: 400% 400%;
+            animation: gradientShift 12s ease infinite;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            padding: 0 10%;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .hero h1 { font-size: 2.8rem; margin: 0; }
+        .hero p { color: #94a3b8; margin-top: 10px; }
+
+        .skills-wrapper {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 40px 0; /* Extra padding to let the top-alignment breathe */
+        }
+
+        .skills-bar {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start; /* FIX: Forces top-alignment */
+        }
+
+        .skill-item {
+            flex: 1;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .skill-item:not(:last-child) {
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .skill-item h4 { 
+            margin: 0; 
+            color: var(--accent-blue); 
+            text-transform: uppercase; 
+            font-size: 0.7rem; 
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+
+        .skill-item p { 
+            margin: 0; 
+            font-size: 0.95rem; 
+            font-weight: 600; 
+            color: #1e293b;
+        }
+
+        .container {
+            padding: 80px 10%;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .section-title { font-size: 1.8rem; margin-bottom: 40px; text-align: center; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            min-width: 0; 
+        }
+
+        .card-image { 
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            object-fit: cover; 
+            display: block;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .card-content { padding: 25px; flex-grow: 1; }
+        .card-content h3 { margin: 0 0 10px 0; font-size: 1.1rem; }
+        .card-content p { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 18px;
+            background-color: #000;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover { background-color: var(--accent-blue); }
+
+        .contact-section { 
+            background-color: #ffffff; 
+            border-top: 1px solid #e2e8f0; 
+            padding: 80px 10%; 
+            text-align: center;
+        }
+        
+        .contact-links {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin-top: 30px;
+        }
+
+        .contact-link {
+            color: #1e293b;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border-bottom: 2px solid var(--accent-blue);
+            padding-bottom: 4px;
+            transition: color 0.3s, border-color 0.3s;
+        }
+
+        .contact-link:hover { 
+            color: var(--accent-blue); 
+            border-color: #1e293b;
+        }
+
+        footer { text-align: center; padding: 40px; background: #000; color: #666; font-size: 0.8rem; }
+
+        @media (max-width: 1024px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+
+        @media (max-width: 768px) {
+            .skills-bar { flex-direction: column; gap: 30px; align-items: center; }
+            .skill-item { border-right: none !important; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; width: 80%; }
+            .skill-item:last-child { border-bottom: none; }
+            .grid { grid-template-columns: 1fr; }
+            .contact-links { flex-direction: column; gap: 25px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="nav-links">
+            <a href="#hero">About</a>
+            <a href="#skills">Skills</a>
+            <a href="#projects">Projects</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </nav>
+
+    <header class="hero" id="hero">
+        <h1>Brad Rehahn</h1>
+        <p>Instructional Designer creating interactive learning that improves performance. I have 15+ years of experience designing eLearning and multimedia training solutions that boost workforce performance. Skilled in Articulate Storyline, Rise 360, Adobe Creative Suite, and LMS platforms.</p>
+    </header>
+
+    <div class="skills-wrapper" id="skills">
+        <div class="skills-bar">
+            <div class="skill-item">
+                <h4>Authoring & eLearning Development</h4>
+                <p>Articulate Storyline 360 • Articulate Rise 360 • Adobe Captivate • Lectora • SCORM-Compliant Course Development • Storyboarding & Script Development • Microlearning Design</p>
+              </div>
+            <div class="skill-item">
+                <h4>Instructional Design</h4>
+                <p>ADDIE Methodology, Needs Analysis • Learning Objectives Development • Adult Learning Principles • Blended Learning Design • SME Collaboration • Stakeholder Management</p>
+        </div>
+            <div class="skill-item">
+                <h4>LMS & Training Administration</h4>
+                <p>LMS Administration • Training Tracking & Reporting • Survey Development & Training Analytics</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="projects">
+        <h2 class="section-title">Case Studies</h2>
+        <div class="grid">
+            
+            <div class="card">
+                <img src="state-park-thumb.jpg" class="card-image" alt="Illinois State Parks">
+                <div class="card-content">
+                    <h3>Illinois State Parks</h3>
+                    <p>10-minute interactive module promoting safe hiking practices.</p>
+                    <a href="state-park.html" class="btn">View Project</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <img src="placeholder2.jpg" class="card-image" alt="Project 2">
+                <div class="card-content">
+                    <h3>Visual Asset Design</h3>
+                    <p>Custom media production and asset libraries.</p>
+                    <a href="#" class="btn">View Project</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <img src="placeholder3.jpg" class="card-image" alt="Project 3">
+                <div class="card-content">
+                    <h3>Needs Assessment</h3>
+                    <p>Strategy and analysis for corporate initiatives.</p>
+                    <a href="#" class="btn">View Project</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+<div class="container" id="projects">
+        <h2 class="section-title">Academic Work</h2>
+        <div class="grid">
+            
+            <div class="card">
+                <img src="images/State-park.jpg" class="card-image" alt="Illinois State Parks">
+                <div class="card-content">
+                    <h3>Illinois State Parks</h3>
+                    <p>10-minute interactive module promoting safe hiking practices.</p>
+                    <a href="state-park.html" class="btn">View Project</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <img src="placeholder2.jpg" class="card-image" alt="Project 2">
+                <div class="card-content">
+                    <h3>Visual Asset Design</h3>
+                    <p>Custom media production and asset libraries.</p>
+                    <a href="#" class="btn">View Project</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <img src="placeholder3.jpg" class="card-image" alt="Project 3">
+                <div class="card-content">
+                    <h3>Needs Assessment</h3>
+                    <p>Strategy and analysis for corporate initiatives.</p>
+                    <a href="#" class="btn">View Project</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="contact-section" id="contact">
+        <h2 class="section-title">Connect With Me</h2>
+        <div class="contact-links">
+            <a href="https://www.linkedin.com/in/yourprofile" class="contact-link">LinkedIn</a>
+            <a href="mailto:yourname@email.com" class="contact-link">Email Address</a>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 | Instructional Designer Portfolio</p>
+    </footer>
+
+</body>
+</html>
